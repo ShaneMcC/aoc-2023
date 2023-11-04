@@ -1,0 +1,15 @@
+FROM alpine:edge
+
+ADD entrypoint.sh /entrypoint.sh
+
+RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing php82 php82-gmp php82-opcache bash && \
+    ln -sf /usr/bin/php82 /usr/bin/php && \
+    touch /etc/php82/conf.d/01_jit.ini && \
+    chmod 777 /etc/php82/conf.d/01_jit.ini && \
+    chmod +x /entrypoint.sh && \
+    chown -R nobody:nobody /entrypoint.sh
+
+USER nobody
+
+CMD /entrypoint.sh
+VOLUME /code
