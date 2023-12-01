@@ -23,15 +23,11 @@
 		return $first.$last;
 	}
 
-	$part1 = [];
-	$part2 = [];
+	$part1 = $part2 = 0;
 	foreach ($input as $line) {
-		$part1[] = getNumbers($line);
-		$part2[] = getNumbers(doWordReplace($words, $numbers, $line));
+		$part1 += getNumbers($line);
+		$part2 += getNumbers(doWordReplace($words, $numbers, $line));
 	}
 
-	$part1 = array_sum($part1);
 	echo 'Part 1: ', $part1, "\n";
-
-	$part2  = array_sum($part2);
 	echo 'Part 2: ', $part2, "\n";
