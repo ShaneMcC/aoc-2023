@@ -4,13 +4,7 @@
 	$input = getInputLines();
 
 	$words = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-	$numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-	function doWordReplace($words, $numbers, $line) {
-		return preg_replace_callback('(' . implode('|', $words) . ')', function($matches) use ($words, $numbers) {
-			return $numbers[array_search($matches[0], $words)];
-		}, $line);
-	}
+	$numbers = ['o1e', 't2o', 't3e', 'f4r', 'f5e', 's6x', 's7n', 'e8t', 'n9e'];
 
 	function getNumbers($line) {
 		$first = $last = null;
@@ -26,7 +20,7 @@
 	$part1 = $part2 = 0;
 	foreach ($input as $line) {
 		$part1 += getNumbers($line);
-		$part2 += getNumbers(doWordReplace($words, $numbers, $line));
+		$part2 += getNumbers(str_replace($words, $numbers, $line));
 	}
 
 	echo 'Part 1: ', $part1, "\n";
