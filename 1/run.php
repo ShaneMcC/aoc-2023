@@ -3,24 +3,35 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
 
-	$entries = [];
-	foreach ($input as $line) {
-		$first = false;
-		$last = false;
-		for ($i = 0; $i < strlen($line); $i++) {
-			if (is_numeric($line[$i])) {
-				if ($first == false) { $first = $line[$i]; }
-				$last = $line[$i]; 
-			}
-		}
+	$words = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+	$numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-		$entries[] = $first . $last;
+	function doWordReplace($words, $numbers, $line) {
+		return preg_replace_callback('(' . implode('|', $words) . ')', function($matches) use ($words, $numbers) {
+			return $numbers[array_search($matches[0], $words)];
+		}, $line);
 	}
 
-	var_dump($entries);
+	function getNumbers($line) {
+		$first = $last = null;
+		for ($i = 0; $i < strlen($line); $i++) {
+			if (is_numeric($line[$i])) {
+				$first = $first ?? $line[$i];
+				$last = $line[$i];
+			}
+		}
+		return $first.$last;
+	}
 
-	$part1 = array_sum($entries);
+	$part1 = [];
+	$part2 = [];
+	foreach ($input as $line) {
+		$part1[] = getNumbers($line);
+		$part2[] = getNumbers(doWordReplace($words, $numbers, $line));
+	}
+
+	$part1 = array_sum($part1);
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	$part2  = array_sum($part2);
+	echo 'Part 2: ', $part2, "\n";
