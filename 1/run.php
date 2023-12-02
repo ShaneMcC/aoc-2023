@@ -14,13 +14,17 @@
 				$last = $line[$i];
 			}
 		}
-		return $first.$last;
+		debugOut($first, $last);
+		return ($first ?? '0').($last ?? '0');
 	}
 
 	$part1 = $part2 = 0;
 	foreach ($input as $line) {
+		debugOut($line, ' => 1: ');
 		$part1 += getNumbers($line);
+		debugOut(', 2: ');
 		$part2 += getNumbers(str_replace($words, $numbers, $line));
+		debugOut("\n");
 	}
 
 	echo 'Part 1: ', $part1, "\n";
