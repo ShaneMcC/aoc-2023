@@ -25,8 +25,8 @@
 
 	$colours = ['red', 'green', 'blue'];
 	$allowedValues = ['red' => 12, 'green' => 13, 'blue' => 14];
-	$validGames = [];
-	$gamePowers = [];
+	$validGames = 0;
+	$gamePowers = 0;
 	foreach ($games as $gameId => $gameBalls) {
 		$valid = true;
 		$min = [];
@@ -38,9 +38,9 @@
 				$valid = false;
 			}
 		}
-		if ($valid) { $validGames[] = $gameId; }
-		$gamePowers[] = array_product($min);
+		if ($valid) { $validGames += $gameId; }
+		$gamePowers += array_product($min);
 	}
 
-	echo 'Part 1: ', array_sum($validGames), "\n";
-	echo 'Part 2: ', array_sum($gamePowers), "\n";
+	echo 'Part 1: ', $validGames, "\n";
+	echo 'Part 2: ', $gamePowers, "\n";
