@@ -23,7 +23,7 @@
 		$entries[$gameId] = $balls;
 	}
 
-	function checkGames($games, $red, $green, $blue) {
+	function checkValidGames($games, $red, $green, $blue) {
 		$validGames = [];
 		foreach ($games as $gameId => $allBalls) {
 			$valid = true;
@@ -41,8 +41,27 @@
 		return $validGames;
 	}
 
-	$part1 = checkGames($entries, 12, 13, 14);
+	function checkMinimumGames($games) {
+		$gamePowers = [];
+		foreach ($games as $gameId => $allBalls) {
+			$minRed = 0;
+			$minBlue = 0;
+			$minGreen = 0;
+			foreach ($allBalls as $balls) {
+				$minRed = max(($balls['red'] ?? 0), $minRed);
+				$minGreen = max(($balls['green'] ?? 0), $minGreen);
+				$minBlue = max(($balls['blue'] ?? 0), $minBlue);
+			}
+			$power = $minRed * $minBlue * $minGreen;
+
+			$gamePowers[] = $power;
+		}
+
+		return $gamePowers;
+	}
+
+	$part1 = checkValidGames($entries, 12, 13, 14);
 	echo 'Part 1: ', array_sum($part1), "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	$part2 = checkMinimumGames($entries);
+	echo 'Part 2: ', array_sum($part2), "\n";
