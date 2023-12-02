@@ -30,12 +30,12 @@
 	foreach ($games as $gameId => $gameBalls) {
 		$valid = true;
 		$min = [];
-		foreach ($gameBalls as $roundBalls) {
-			foreach ($colours as $colour) {
-				if ($valid && ($roundBalls[$colour] ?? 0) > ($allowedValues[$colour] ?? 0)) {
-					$valid = false;
-				}
+		foreach ($colours as $colour) {
+			foreach ($gameBalls as $roundBalls) {
 				$min[$colour] = max(($roundBalls[$colour] ?? 0), ($min[$colour] ?? 0));
+			}
+			if ($valid && ($min[$colour] ?? 0) > ($allowedValues[$colour] ?? 0)) {
+				$valid = false;
 			}
 		}
 		if ($valid) { $validGames[] = $gameId; }
