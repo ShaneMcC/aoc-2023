@@ -3,65 +3,44 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
 
-	$entries = [];
+	$games = [];
 	foreach ($input as $line) {
 		preg_match('#Game (.*): (.*)#SADi', $line, $m);
-		[$all, $gameId, $results] = $m;
+		[$all, $gameId, $rounds] = $m;
 
-		$balls = [];
-		$bits = explode(';', $results);
-		foreach ($bits as $bit) {
-			$attemptBalls = [];
-			if (preg_match_all('/([0-9]+) (red|blue|green)/', $bit, $m)) {
+		$gameBalls = [];
+		$rounds = explode(';', $rounds);
+		foreach ($rounds as $round) {
+			$roundBalls = [];
+			if (preg_match_all('/([0-9]+) (red|blue|green)/', $round, $m)) {
 				for ($i = 0; $i < count($m[0]); $i++) {
-					$attemptBalls[$m[2][$i]] = $m[1][$i];
+					$roundBalls[$m[2][$i]] = $m[1][$i];
 				}
 			}
-			$balls[] = $attemptBalls;
+			$gameBalls[] = $roundBalls;
 		}
 
-		$entries[$gameId] = $balls;
+		$games[$gameId] = $gameBalls;
 	}
 
-	function checkValidGames($games, $red, $green, $blue) {
-		$validGames = [];
-		foreach ($games as $gameId => $allBalls) {
-			$valid = true;
-			foreach ($allBalls as $balls) {
-				if (($balls['red'] ?? 0) > $red || ($balls['green'] ?? 0) > $green || ($balls['blue'] ?? 0) > $blue) {
+	$colours = ['red', 'green', 'blue'];
+	$allowedValues = ['red' => 12, 'green' => 13, 'blue' => 14];
+	$validGames = [];
+	$gamePowers = [];
+	foreach ($games as $gameId => $gameBalls) {
+		$valid = true;
+		$min = [];
+		foreach ($gameBalls as $roundBalls) {
+			foreach ($colours as $colour) {
+				if ($valid && ($roundBalls[$colour] ?? 0) > ($allowedValues[$colour] ?? 0)) {
 					$valid = false;
-					break;
 				}
-			}
-			if ($valid) {
-				$validGames[] = $gameId;
+				$min[$colour] = max(($roundBalls[$colour] ?? 0), ($min[$colour] ?? 0));
 			}
 		}
-
-		return $validGames;
+		if ($valid) { $validGames[] = $gameId; }
+		$gamePowers[] = array_product($min);
 	}
 
-	function checkMinimumGames($games) {
-		$gamePowers = [];
-		foreach ($games as $gameId => $allBalls) {
-			$minRed = 0;
-			$minBlue = 0;
-			$minGreen = 0;
-			foreach ($allBalls as $balls) {
-				$minRed = max(($balls['red'] ?? 0), $minRed);
-				$minGreen = max(($balls['green'] ?? 0), $minGreen);
-				$minBlue = max(($balls['blue'] ?? 0), $minBlue);
-			}
-			$power = $minRed * $minBlue * $minGreen;
-
-			$gamePowers[] = $power;
-		}
-
-		return $gamePowers;
-	}
-
-	$part1 = checkValidGames($entries, 12, 13, 14);
-	echo 'Part 1: ', array_sum($part1), "\n";
-
-	$part2 = checkMinimumGames($entries);
-	echo 'Part 2: ', array_sum($part2), "\n";
+	echo 'Part 1: ', array_sum($validGames), "\n";
+	echo 'Part 2: ', array_sum($gamePowers), "\n";
