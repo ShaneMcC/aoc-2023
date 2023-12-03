@@ -1,8 +1,8 @@
-FROM alpine:edge
+FROM alpine:3.16
 
 ADD entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing php8 php8-gmp php8-opcache bash && \
+RUN apk add --no-cache php8 php8-gmp php8-opcache bash && \
     ln -sf /usr/bin/php8 /usr/bin/php && \
     touch /etc/php8/conf.d/01_jit.ini && \
     chmod 777 /etc/php8/conf.d/01_jit.ini && \
