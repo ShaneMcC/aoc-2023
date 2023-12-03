@@ -2,10 +2,10 @@ FROM alpine:edge
 
 ADD entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing php81 php81-gmp php81-opcache bash && \
-    ln -sf /usr/bin/php81 /usr/bin/php && \
-    touch /etc/php81/conf.d/01_jit.ini && \
-    chmod 777 /etc/php81/conf.d/01_jit.ini && \
+RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing php83 php83-gmp php83-opcache bash hyperfine && \
+    ln -sf /usr/bin/php83 /usr/bin/php && \
+    touch /etc/php83/conf.d/01_jit.ini && \
+    chmod 777 /etc/php83/conf.d/01_jit.ini && \
     chmod +x /entrypoint.sh && \
     chown -R nobody:nobody /entrypoint.sh
 
