@@ -14,6 +14,9 @@ while [ "${1}" != "" ]; do
 		--time)
 			TIME="1"
 			;;
+		--hyperfine)
+			HYPERFINE="1"
+			;;
 		--jit)
 			JIT="1"
 			;;
@@ -49,7 +52,6 @@ fi;
 PHPCONFDIR=`ls -1d /etc/php*/conf.d | head -n 1`
 if [ -e "${PHPCONFDIR}/01_jit.ini" ]; then
 	if [ "${JIT}" = "1" ]; then
-		# echo "${PHPCONFDIR}/01_jit.ini"
 		echo "opcache.enable_cli=1" > "${PHPCONFDIR}/01_jit.ini"
 		echo "opcache.jit_buffer_size=50M" >> "${PHPCONFDIR}/01_jit.ini"
 		echo "opcache.jit=tracing" >> "${PHPCONFDIR}/01_jit.ini"
@@ -61,6 +63,9 @@ fi;
 if [ "${TIME}" = "1" ]; then
 	export TIMED=1
 	time php /code/${DAY}/${FILE} ${@}
+elif [ "${HYPERFINE}" = "1" ]; then
+	export TIMED=1
+	hyperfine --warmup 1 -m 5 -M 20 -u second --export-json hyperfine.json php /code/${DAY}/${FILE} ${@}
 else
 	php /code/${DAY}/${FILE} ${@}
 fi;
