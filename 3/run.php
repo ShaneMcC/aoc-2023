@@ -13,7 +13,7 @@
 		foreach (yieldXY($startx, $starty, $endx, $endy, true) as $x => $y) {
 			$val = ($input[$y][$x] ?? '.');
 			if (!is_numeric($val) && $val != '.') {
-				$symbols[] = $val;
+				$symbols[] = [$val, $x . ',' . $y];
 			}
 		}
 
@@ -21,6 +21,7 @@
 	}
 
 	$part1 = 0;
+	$gears = [];
 
 	foreach ($input as $y => $row) {
 		$current = null;
@@ -32,22 +33,53 @@
 			} else if (is_numeric($col)) {
 				$current .= $col;
 			} else if ($current != null) {
-				debugOut('Number: ', $current, "\n");
 				$symbols = getSymbols($startX - 1, $y - 1, $x, $y + 1);
-				debugOut("\t", (!empty($symbols) ? "VALID (" . implode('', $symbols) . ")" : "NOT VALID"), "\n");
-				if (!empty($symbols)) { $part1 += $current; }
+				if (!empty($symbols)) {
+					$part1 += $current;
+					foreach ($symbols as $symbolInfo) {
+						[$symbol, $location] = $symbolInfo;
+
+						if ($symbol == '*') {
+							if (!isset($gears[$location])) { $gears[$location] = []; }
+							$gears[$location][] = $current;
+						}
+					}
+				}
+
+				debugOut('Number: ', $current, "\n");
+				debugOut("\t", (!empty($symbols) ? "VALID (" . implode('', array_column($symbols, 0)) . ")" : "NOT VALID"), "\n");
 				$current = null;
 			}
 		}
 
 		if ($current != null) {
-			debugOut('Number: ', $current, "\n");
 			$symbols = getSymbols($startX - 1, $y - 1, $x, $y + 1);
-			debugOut("\t", (!empty($symbols) ? "VALID (" . implode('', $symbols) . ")" : "NOT VALID"), "\n");
-			if (!empty($symbols)) { $part1 += $current; }
+			if (!empty($symbols)) {
+				$part1 += $current;
+				foreach ($symbols as $symbolInfo) {
+					[$symbol, $location] = $symbolInfo;
+
+					if ($symbol == '*') {
+						if (!isset($gears[$location])) { $gears[$location] = []; }
+						$gears[$location][] = $current;
+					}
+				}
+			}
+
+			debugOut('Number: ', $current, "\n");
+			debugOut("\t", (!empty($symbols) ? "VALID (" . implode('', array_column($symbols, 0)) . ")" : "NOT VALID"), "\n");
 			$current = null;
 		}
 	}
 
-
 	echo 'Part 1: ', $part1, "\n";
+
+	$part2 = 0;
+
+	foreach ($gears as $location => $numbers) {
+		if (count($numbers) == 2) {
+			$part2 += array_product($numbers);
+		}
+	}
+
+	echo 'Part 2: ', $part2, "\n";
