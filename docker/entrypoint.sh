@@ -65,7 +65,7 @@ if [ "${TIME}" = "1" ]; then
 	time php /code/${DAY}/${FILE} ${@}
 elif [ "${HYPERFINE}" = "1" ]; then
 	export TIMED=1
-	hyperfine --warmup 1 -m 5 -M 20 -u second --export-json hyperfine.json php /code/${DAY}/${FILE} ${@}
+	hyperfine --warmup 1 -m 5 -M 20 -u second --export-json /code/hyperfine.json --show-output "php /code/${DAY}/${FILE} ${*}"
 else
 	php /code/${DAY}/${FILE} ${@}
 fi;
