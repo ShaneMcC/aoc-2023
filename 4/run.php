@@ -30,7 +30,7 @@
 		$part1 += $value;
 
 		debugOut("{$gameId} had {$winning} matching numbers ({$gameInfo['copies']} copies).\n");
-		for ($newId = ($gameId + 1); $newId < ($gameId + 1 + $winning); $newId++) {
+		for ($newId = ($gameId + 1); $newId <= ($gameId + $winning); $newId++) {
 			if (isset($games[$newId])) {
 				debugOut("\tAdded {$gameInfo['copies']} copies of {$newId} from {$gameId}\n");
 				$games[$newId]['copies'] += $gameInfo['copies'];
