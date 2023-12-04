@@ -7,10 +7,10 @@
 	$copies = [];
 	foreach ($input as $line) {
 		preg_match('#Card\s+(.*): (.*) \| (.*)#SADi', $line, $m);
-		[$all, $gameId, $round1, $round2] = $m;
+		[$all, $gameId, $winning, $mine] = $m;
 
-		preg_match_all('/(\d+)/', $round1, $m1);
-		preg_match_all('/(\d+)/', $round2, $m2);
+		preg_match_all('/(\d+)/', $winning, $m1);
+		preg_match_all('/(\d+)/', $mine, $m2);
 
 		$games[$gameId] = ['winning' => $m1[1], 'mine' => $m2[1], 'copies' => 1];
 	}
