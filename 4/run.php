@@ -6,23 +6,22 @@
 	$games = [];
 	$copies = [];
 	foreach ($input as $line) {
-		preg_match('#Card (.*): (.*) \| (.*)#SADi', $line, $m);
+		preg_match('#Card\s+(.*): (.*) \| (.*)#SADi', $line, $m);
 		[$all, $gameId, $round1, $round2] = $m;
 
 		preg_match_all('/(\d+)/', $round1, $m1);
 		preg_match_all('/(\d+)/', $round2, $m2);
 
-		$gameId = trim($gameId);
-		$games[$gameId] = ['winning' => $m1[1], 'mine' => $m2[1]];
-		$copies[$gameId] = 1;
+		$games[$gameId] = ['winning' => $m1[1], 'mine' => $m2[1], 'copies' => 1];
 	}
 
 	$part1 = 0;
-	foreach ($games as $gameId => $numbers) {
+	foreach (array_keys($games) as $gameId) {
+		$gameInfo = $games[$gameId];
 		$value = 0;
 		$winning = 0;
-		foreach ($numbers['mine'] as $num) {
-			if (in_array($num, $numbers['winning'])) {
+		foreach ($gameInfo['mine'] as $num) {
+			if (in_array($num, $gameInfo['winning'])) {
 				if ($value == 0) { $value = 1; }
 				else { $value += $value; }
 				$winning++;
@@ -30,15 +29,14 @@
 		}
 		$part1 += $value;
 
-		debugOut("{$gameId} had {$winning} matching numbers ($copies[$gameId] copies).\n");
-		for ($i = 0; $i < $winning; $i++) {
-			$newId = $gameId + 1 + $i;
-			if (isset($copies[$newId])) {
-				debugOut("\tAdded {$copies[$gameId]} copies of {$newId} from {$gameId}\n");
-				$copies[$newId] += $copies[$gameId];
+		debugOut("{$gameId} had {$winning} matching numbers ({$gameInfo['copies']} copies).\n");
+		for ($newId = ($gameId + 1); $newId < ($gameId + 1 + $winning); $newId++) {
+			if (isset($games[$newId])) {
+				debugOut("\tAdded {$gameInfo['copies']} copies of {$newId} from {$gameId}\n");
+				$games[$newId]['copies'] += $gameInfo['copies'];
 			}
 		}
 	}
 
 	echo 'Part 1: ', $part1, "\n";
-	echo 'Part 2: ', array_sum($copies), "\n";
+	echo 'Part 2: ', array_sum(array_column($games, 'copies')), "\n";
