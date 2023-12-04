@@ -18,12 +18,11 @@
 	$part1 = 0;
 	foreach (array_keys($games) as $gameId) {
 		$gameInfo = $games[$gameId];
-		$value = 0;
+		$value = null;
 		$winning = 0;
 		foreach ($gameInfo['mine'] as $num) {
 			if (in_array($num, $gameInfo['winning'])) {
-				if ($value == 0) { $value = 1; }
-				else { $value += $value; }
+				$value += $value ?? 1;
 				$winning++;
 			}
 		}
