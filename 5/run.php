@@ -1,7 +1,16 @@
 #!/usr/bin/php
 <?php
+	$__CLI['long'] = ['part1', 'part2', 'full'];
+	$__CLI['extrahelp'][] = '      --part1              Only run part 1.';
+	$__CLI['extrahelp'][] = '      --part2              Only run part 2.';
+	$__CLI['extrahelp'][] = '      --full               Show full messages in debug output.';
+
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLineGroups();
+
+	$doPart1 = isset($__CLIOPTS['part1']) || (!isset($__CLIOPTS['part1']) && !isset($__CLIOPTS['part2']));
+	$doPart2 = isset($__CLIOPTS['part2']) || (!isset($__CLIOPTS['part1']) && !isset($__CLIOPTS['part2']));
+	$fullDebug = isset($__CLIOPTS['full']);
 
 	$seeds = explode(" ", array_shift($input)[0]);
 	array_shift($seeds);
@@ -42,28 +51,41 @@
 		$maps[$title] = $newRanges;
 	}
 
-	debugOut(json_encode($maps, JSON_PRETTY_PRINT), "\n");
+	if (isDebug()) {
+		foreach ($maps as $section => $mappings) {
+			debugOut($section, ' mapping:', "\n");
+			foreach ($mappings as $map) {
+				debugOut("\t", preg_replace("/\s+/", " ", json_encode($map, JSON_PRETTY_PRINT)), "\n");
+			}
+		}
+		debugOut("\n");
+	}
 
 	function getRangesForStep($ranges, $stepName) {
-		global $maps;
+		global $maps, $fullDebug;
 
 		debugOut("== ", $stepName, "\n");
 		// Split each range into as many bits as needed.
 		$newRanges = [];
 		foreach ($ranges as [$rangeStart, $rangeEnd]) {
-			debugOut(json_encode([$rangeStart, $rangeEnd]), "\n");
+			debugOut("\t", json_encode([$rangeStart, $rangeEnd]));
+			if ($fullDebug) { debugOut("\n"); }
+
 			foreach ($maps[$stepName] as $mapping) {
 				if ($mapping['end'] < $rangeStart || $mapping['start'] > $rangeEnd) { continue; }
 
 				$bitStart = max($mapping['start'], $rangeStart);
 				$bitEnd = min($mapping['end'], $rangeEnd);
 
-				debugOut("\t\t => ", json_encode([$bitStart, $bitEnd]));
-
 				$convertedStart = $bitStart + $mapping['delta'];
 				$convertedEnd = $bitEnd + $mapping['delta'];
 				$newRange = [$convertedStart, $convertedEnd];
-				debugOut(" mapped to ", json_encode($newRange), ' from ', json_encode($mapping['original'] ?? 'gap'), "\n");
+				if ($fullDebug) {
+					debugOut("\t\t\t => ", json_encode([$bitStart, $bitEnd]));
+					debugOut(" mapped to ", json_encode($newRange), ' from ', json_encode($mapping['original'] ?? 'gap'), "\n");
+				} else {
+					debugOut(" => ", json_encode([$bitStart, $bitEnd]), ' (', json_encode($newRange), ')');
+				}
 
 				$newRanges[] = $newRange;
 
@@ -88,13 +110,19 @@
 	}
 
 	// Get ranges for part 1;
-	$ranges = [];
-	for ($i = 0; $i < count($seeds); $i++) { $ranges[] = [(int)$seeds[$i], (int)$seeds[$i]]; }
-	$part1 = min(array_column(getLocations($ranges), 0));
-	echo 'Part 1: ', $part1, "\n";
+	if ($doPart1) {
+		$ranges = [];
+		for ($i = 0; $i < count($seeds); $i++) { $ranges[] = [(int)$seeds[$i], (int)$seeds[$i]]; }
+		$part1 = min(array_column(getLocations($ranges), 0));
+		echo 'Part 1: ', $part1, "\n";
+	}
+
+	if ($doPart1 && $doPart2) {	debugOut("\n\n\n"); }
 
 	// Get ranges for part 2.
-	$ranges = [];
-	for ($i = 0; $i < count($seeds); $i += 2) { $ranges[] = [(int)$seeds[$i], ($seeds[$i] + $seeds[$i + 1])]; }
-	$part2 = min(array_column(getLocations($ranges), 0));
-	echo 'Part 2: ', $part2, "\n";
+	if ($doPart2) {
+		$ranges = [];
+		for ($i = 0; $i < count($seeds); $i += 2) { $ranges[] = [(int)$seeds[$i], ($seeds[$i] + $seeds[$i + 1])]; }
+		$part2 = min(array_column(getLocations($ranges), 0));
+		echo 'Part 2: ', $part2, "\n";
+	}
