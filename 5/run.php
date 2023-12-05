@@ -72,7 +72,8 @@
 			if ($fullDebug) { debugOut("\n"); }
 
 			foreach ($maps[$stepName] as $mapping) {
-				if ($mapping['end'] < $rangeStart || $mapping['start'] > $rangeEnd) { continue; }
+				if ($mapping['end'] < $rangeStart) { continue; }
+				if ($mapping['start'] > $rangeEnd) { break; }
 
 				$bitStart = max($mapping['start'], $rangeStart);
 				$bitEnd = min($mapping['end'], $rangeEnd);
