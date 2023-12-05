@@ -9,33 +9,111 @@
 	$maps = [];
 	foreach ($input as $section) {
 		$title = explode(" ", array_shift($section))[0];
-		$maps[$title] = [];
+		$steps = [];
+		// Get Steps
 		foreach ($section as $mapping) {
-			[$dst, $src, $range] = explode(" ", $mapping);
-			$maps[$title][] = ['dst' => $dst, 'src' => $src, 'range' => $range];
+			[$dest, $start, $range] = explode(" ", $mapping);
+			$steps[] = ['start' => (int)$start, 'end' => $start + $range - 1, 'dest' => (int)$dest];
 		}
-	}
+		// Sort in order
+		usort($steps, function($a, $b) { return $a['start'] <=> $b['start']; });
 
-	function convert($maps, $type, $value) {
-		debugOut("Converting {$value} {$type} => ");
+		// Add missing games as a mapping entry so that we have a complete set of mappings from 0 => PHP_INT_MAX;
+		$newRanges = [];
+		for ($i = 0; $i < PHP_INT_MAX; $i++) {
+			$next = $steps[0];
 
-		foreach ($maps[$type] as $mapping) {
-			if ($value >= $mapping['src'] && $value < ($mapping['src'] + $mapping['range'])) {
-				$diff = $value - $mapping['src'];
-				$value = $mapping['dst'] + $diff;
-				break;
+			// If the next range is higher than us, add a mapping from here to there.
+			if ($i < $next['start']) {
+				$newRanges[] = ['start' => $i, 'end' => $next['start'] - 1, 'dest' => (int)$i, 'computed' => true];
+			}
+
+			// Add the next range
+			$newRanges[] = array_shift($steps);
+			$i = $next['end'];
+
+			// If there are no more ranges, add a final range.
+			if (empty($steps)) {
+				$newRanges[] = ['start' => $i + 1, 'end' => PHP_INT_MAX, 'dest' => (int)$i + 1, 'computed' => true];
+				$i = PHP_INT_MAX;
 			}
 		}
 
-		debugOut("{$value}\n");
-		return $value;
+		$maps[$title] = $newRanges;
+	}
+
+	debugOut(json_encode($maps, JSON_PRETTY_PRINT), "\n");
+
+	function convert($type, $value) {
+		global $maps;
+		debugOut("Converting {$value} {$type} => ");
+
+		$newValue = $value;
+		foreach ($maps[$type] as $mapping) {
+			if ($value >= $mapping['start'] && $value <= $mapping['end']) {
+				$newValue = $mapping['dest'] + ($value - $mapping['start']);
+				debugOut("{$newValue}\n");
+				return $newValue;
+			}
+		}
 	}
 
 	$part1 = PHP_INT_MAX;
 	foreach ($seeds as $seed) {
-		$location = convert($maps, 'humidity-to-location', convert($maps, 'temperature-to-humidity', convert($maps, 'light-to-temperature', convert($maps, 'water-to-light', convert($maps, 'fertilizer-to-water', convert($maps, 'soil-to-fertilizer', convert($maps, 'seed-to-soil', $seed)))))));
+		$value = $seed;
+		foreach (array_keys($maps) as $step) {
+			$value = convert($step, $value);
+		}
 
-		$part1 = min($part1, $location);
+		$part1 = min($part1, $value);
 	}
 
 	echo 'Part 1: ', $part1, "\n";
+
+	function getRangesForStep($ranges, $stepName) {
+		global $maps;
+
+		debugOut("== ", $stepName, "\n");
+		// Split each range into as many bits as needed.
+		$newRanges = [];
+		foreach ($ranges as [$rangeStart, $rangeEnd]) {
+			debugOut(json_encode([$rangeStart, $rangeEnd]), "\n");
+			foreach ($maps[$stepName] as $mapping) {
+				if ($mapping['end'] < $rangeStart || $mapping['start'] > $rangeEnd) { continue; }
+
+				$bitStart = max($mapping['start'], $rangeStart);
+				$bitEnd = min($mapping['end'], $rangeEnd);
+
+				debugOut("\t\t => ", json_encode([$bitStart, $bitEnd]));
+
+				$convertedStart = $mapping['dest'] + ($bitStart - $mapping['start']);
+				$convertedEnd = $mapping['dest'] + ($bitEnd - $mapping['start']);
+				$newRange = [$convertedStart, $convertedEnd];
+				debugOut(" mapped to ", json_encode($newRange), "\n");
+
+				$newRanges[] = $newRange;
+
+			}
+			debugOut("\n");
+		}
+		return $newRanges;
+	}
+
+	// Get ranges for part 2.
+	$ranges = [];
+	for ($i = 0; $i < count($seeds); $i++) {
+		$ranges[] = [(int)$seeds[$i], ($seeds[$i] + $seeds[$i + 1])];
+		$i++;
+	}
+
+	debugOut("== Start\n");
+	foreach ($ranges as $range) {
+		debugOut(json_encode($range), "\n");
+	}
+
+	foreach (array_keys($maps) as $name) {
+		$ranges = getRangesForStep($ranges, $name);
+	}
+
+	$part2 = min(array_column($ranges, 0));
+	echo 'Part 2: ', $part2, "\n";
