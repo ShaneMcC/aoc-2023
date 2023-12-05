@@ -13,7 +13,7 @@
 		// Get Steps
 		foreach ($section as $mapping) {
 			[$dest, $start, $range] = explode(" ", $mapping);
-			$steps[] = ['start' => (int)$start, 'end' => $start + $range - 1, 'dest' => (int)$dest];
+			$steps[] = ['start' => (int)$start, 'end' => $start + $range - 1, 'dest' => (int)$dest, 'delta' => ($dest - $start), 'original' => $mapping];
 		}
 		// Sort in order
 		usort($steps, function($a, $b) { return $a['start'] <=> $b['start']; });
@@ -25,7 +25,7 @@
 
 			// If the next range is higher than us, add a mapping from here to there.
 			if ($i < $next['start']) {
-				$newRanges[] = ['start' => $i, 'end' => $next['start'] - 1, 'dest' => (int)$i, 'computed' => true];
+				$newRanges[] = ['start' => $i, 'end' => $next['start'] - 1, 'dest' => (int)$i, 'delta' => 0, 'computed' => true];
 			}
 
 			// Add the next range
@@ -34,7 +34,7 @@
 
 			// If there are no more ranges, add a final range.
 			if (empty($steps)) {
-				$newRanges[] = ['start' => $i + 1, 'end' => PHP_INT_MAX, 'dest' => (int)$i + 1, 'computed' => true];
+				$newRanges[] = ['start' => $i + 1, 'end' => PHP_INT_MAX, 'dest' => (int)$i + 1, 'delta' => 0, 'computed' => true];
 				$i = PHP_INT_MAX;
 			}
 		}
@@ -60,10 +60,10 @@
 
 				debugOut("\t\t => ", json_encode([$bitStart, $bitEnd]));
 
-				$convertedStart = $mapping['dest'] + ($bitStart - $mapping['start']);
-				$convertedEnd = $mapping['dest'] + ($bitEnd - $mapping['start']);
+				$convertedStart = $bitStart + $mapping['delta'];
+				$convertedEnd = $bitEnd + $mapping['delta'];
 				$newRange = [$convertedStart, $convertedEnd];
-				debugOut(" mapped to ", json_encode($newRange), "\n");
+				debugOut(" mapped to ", json_encode($newRange), ' from ', json_encode($mapping['original'] ?? 'gap'), "\n");
 
 				$newRanges[] = $newRange;
 
