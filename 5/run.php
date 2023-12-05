@@ -44,32 +44,6 @@
 
 	debugOut(json_encode($maps, JSON_PRETTY_PRINT), "\n");
 
-	function convert($type, $value) {
-		global $maps;
-		debugOut("Converting {$value} {$type} => ");
-
-		$newValue = $value;
-		foreach ($maps[$type] as $mapping) {
-			if ($value >= $mapping['start'] && $value <= $mapping['end']) {
-				$newValue = $mapping['dest'] + ($value - $mapping['start']);
-				debugOut("{$newValue}\n");
-				return $newValue;
-			}
-		}
-	}
-
-	$part1 = PHP_INT_MAX;
-	foreach ($seeds as $seed) {
-		$value = $seed;
-		foreach (array_keys($maps) as $step) {
-			$value = convert($step, $value);
-		}
-
-		$part1 = min($part1, $value);
-	}
-
-	echo 'Part 1: ', $part1, "\n";
-
 	function getRangesForStep($ranges, $stepName) {
 		global $maps;
 
@@ -99,21 +73,28 @@
 		return $newRanges;
 	}
 
+	function getLocations($seedRanges) {
+		global $maps;
+
+		debugOut("== Start\n");
+		foreach ($seedRanges as $range) {
+			debugOut(json_encode($range), "\n");
+		}
+
+		foreach (array_keys($maps) as $name) {
+			$seedRanges = getRangesForStep($seedRanges, $name);
+		}
+		return $seedRanges;
+	}
+
+	// Get ranges for part 1;
+	$ranges = [];
+	for ($i = 0; $i < count($seeds); $i++) { $ranges[] = [(int)$seeds[$i], (int)$seeds[$i]]; }
+	$part1 = min(array_column(getLocations($ranges), 0));
+	echo 'Part 1: ', $part1, "\n";
+
 	// Get ranges for part 2.
 	$ranges = [];
-	for ($i = 0; $i < count($seeds); $i++) {
-		$ranges[] = [(int)$seeds[$i], ($seeds[$i] + $seeds[$i + 1])];
-		$i++;
-	}
-
-	debugOut("== Start\n");
-	foreach ($ranges as $range) {
-		debugOut(json_encode($range), "\n");
-	}
-
-	foreach (array_keys($maps) as $name) {
-		$ranges = getRangesForStep($ranges, $name);
-	}
-
-	$part2 = min(array_column($ranges, 0));
+	for ($i = 0; $i < count($seeds); $i += 2) { $ranges[] = [(int)$seeds[$i], ($seeds[$i] + $seeds[$i + 1])]; }
+	$part2 = min(array_column(getLocations($ranges), 0));
 	echo 'Part 2: ', $part2, "\n";
