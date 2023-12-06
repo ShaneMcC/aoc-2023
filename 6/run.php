@@ -18,72 +18,47 @@
 		$megaRace[strtolower($type)] = preg_replace('/[^0-9]/', '', $numbers);
 	}
 
-	function simulate($time, $hold) {
-		$distance = $hold * ($time - $hold);
-		return $distance;
+	function isWinner($time, $value, $distance) {
+		return ($value * ($time - $value)) > $distance;
 	}
 
 	function getWinningOptions($race) {
-		$lower = findLower($race);
-		$higher = findHigher($race);
-
-		return $higher - $lower + 1;
-	}
-
-	function findLower($race) {
 		$time = $race['time'];
 		$distance = $race['distance'];
 
-		$low = 0;
-		$high = $time - 1;
-
-		while ($low <= $high) {
-			$mid = floor(($low + $high) / 2);
-
-			$thisResult = (simulate($time, $mid) > $distance);
-			$lowerResult = (simulate($time, $mid - 1) > $distance);
+		// Look for the first value that wins.
+		// This will be the value that is a winner, but 1 before it is not.
+		$lower = doBinarySearch(0, $time, function($value) use ($time, $distance) {
+			$thisResult = isWinner($time, $value, $distance);
+			$lowerResult = isWinner($time, $value - 1, $distance);
 			$isLowest = ($thisResult && !$lowerResult);
 
 			if ($isLowest) {
-				return $mid;
-			}
-
-			if ($thisResult) {
-				$high = $mid -1;
+				return 0;
+			} else if ($thisResult) {
+				return -1;
 			} else {
-				$low = $mid + 1;
+				return 1;
 			}
-		}
+		});
 
-		return false;
-	}
-
-	function findHigher($race) {
-		$time = $race['time'];
-		$distance = $race['distance'];
-
-		$low = 0;
-		$high = $time - 1;
-
-		while ($low <= $high) {
-			$mid = floor(($low + $high) / 2);
-
-			$thisResult = (simulate($time, $mid) > $distance);
-			$upperResult = (simulate($time, $mid + 1) > $distance);
+		// Look for the last value that wins.
+		// This will be the value that is a winner, but 1 after it is not.
+		$higher = doBinarySearch(0, $time, function($value) use ($time, $distance) {
+			$thisResult = isWinner($time, $value, $distance);
+			$upperResult = isWinner($time, $value + 1, $distance);
 			$isHighest = ($thisResult && !$upperResult);
 
 			if ($isHighest) {
-				return $mid;
-			}
-
-			if (!$thisResult) {
-				$high = $mid -1;
+				return 0;
+			} else if ($thisResult) {
+				return 1;
 			} else {
-				$low = $mid + 1;
+				return -1;
 			}
-		}
+		});
 
-		return false;
+		return $higher - $lower + 1;
 	}
 
 	$part1 = 1;
@@ -93,5 +68,4 @@
 
 	echo 'Part 1: ', $part1, "\n";
 
-	$part2 = getWinningOptions($megaRace);
-	echo 'Part 2: ', $part2, "\n";
+	echo 'Part 2: ', getWinningOptions($megaRace), "\n";

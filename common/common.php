@@ -600,6 +600,32 @@
 		return ($a * $b / gcd($a, $b));
 	}
 
+
+	/**
+	 * Do a binary search.
+	 *
+	 * @param mixed $low Low point to start looking
+	 * @param mixed $high High point to start looking.
+	 * @param mixed $test Function to check if we have found what we want. Should return <-1|0|1> for <check lower|yes|check higher>
+	 * @return int|false Position in list item was found, or false.
+	 */
+	function doBinarySearch($low, $high, $test) {
+		while ($low <= $high) {
+			$mid = floor(($low + $high) / 2);
+
+			$testResult = call_user_func($test, $mid);
+			if ($testResult === 0) {
+				return $mid;
+			} else if ($testResult < 0) {
+				$high = $mid - 1;
+			} else if ($testResult > 0) {
+				$low = $mid + 1;
+			}
+		}
+
+		return false;
+	}
+
 	// Remove unneeded stuff when timing.
 	if (getenv("TIMED") === FALSE) {
 		/**
