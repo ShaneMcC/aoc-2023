@@ -10,3 +10,5 @@ environment:
 daypath: %day%
 inputfile: %day%/input.txt
 answerfile: %day%/answers.txt
+common:
+ - common
