@@ -22,7 +22,7 @@
 		return ($value * ($time - $value)) > $distance;
 	}
 
-	function getWinningOptions($race) {
+	function searchWinningOptions($race) {
 		$time = $race['time'];
 		$distance = $race['distance'];
 
@@ -61,11 +61,21 @@
 		return $higher - $lower + 1;
 	}
 
+	function calcWinningOptions($race) {
+		$time = $race['time'];
+		$distance = $race['distance'];
+
+		$sqrt = sqrt(($time * $time) - (4 * $distance));
+		$low = ($time - $sqrt) / 2;
+        $high = ($time + $sqrt) / 2;
+
+        return ceil($high) - floor($low) - 1;
+	}
+
 	$part1 = 1;
 	foreach ($races as $raceid => $race) {
-		$part1 *= getWinningOptions($race);
+		$part1 *= calcWinningOptions($race);
 	}
 
 	echo 'Part 1: ', $part1, "\n";
-
-	echo 'Part 2: ', getWinningOptions($megaRace), "\n";
+	echo 'Part 2: ', calcWinningOptions($megaRace), "\n";
