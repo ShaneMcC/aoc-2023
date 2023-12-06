@@ -4,6 +4,7 @@ DAY="0"
 FILE="run.php"
 TIME="0";
 JIT="0";
+SETUP="0";
 
 while [ "${1}" != "" ]; do
 	case "${1}" in
@@ -19,6 +20,9 @@ while [ "${1}" != "" ]; do
 			;;
 		--jit)
 			JIT="1"
+			;;
+		--setup)
+			SETUP="1"
 			;;
 		*)
 			DAY="${1}"
@@ -49,7 +53,7 @@ if [ ! -e "/code/${DAY}/${FILE}" ]; then
 	exit 1;
 fi;
 
-PHPCONFDIR=`ls -1d /etc/php*/conf.d | head -n 1`
+PHPCONFDIR=`ls -1d /etc/php*/conf.d  2>&1 | head -n 1`
 if [ -e "${PHPCONFDIR}/01_jit.ini" ]; then
 	if [ "${JIT}" = "1" ]; then
 		echo "opcache.enable_cli=1" > "${PHPCONFDIR}/01_jit.ini"
@@ -58,6 +62,10 @@ if [ -e "${PHPCONFDIR}/01_jit.ini" ]; then
 	else
 		echo "" > "${PHPCONFDIR}/01_jit.ini"
 	fi;
+fi;
+
+if [ "${SETUP}" = "1" ]; then
+	exit 0;
 fi;
 
 if [ "${TIME}" = "1" ]; then
