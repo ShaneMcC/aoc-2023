@@ -33,15 +33,11 @@
 	function findAllPaths($directions, $nodes) {
 		$count = [];
 
+		$result = 1;
 		foreach (array_keys($nodes) as $n) {
 			if ($n[strlen($n) - 1] == 'A') {
-				$count[$n] = findPath($directions, $nodes, $n, '..Z');
+				$result = lcm($result, findPath($directions, $nodes, $n, '..Z'));
 			}
-		}
-
-		$result = 1;
-		foreach ($count as $c) {
-			$result = lcm($result, $c);
 		}
 
 		return $result;
