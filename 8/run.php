@@ -31,8 +31,6 @@
 	echo 'Part 1: ', $part1, "\n";
 
 	function findAllPaths($directions, $nodes) {
-		$count = [];
-
 		$result = 1;
 		foreach (array_keys($nodes) as $n) {
 			if ($n[strlen($n) - 1] == 'A') {
