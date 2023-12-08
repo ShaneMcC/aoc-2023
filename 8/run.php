@@ -13,15 +13,15 @@
 		}
 	}
 
-	function findPath($directions, $nodes) {
-		$current = 'AAA';
+	function findPath($directions, $nodes, $current = 'AAA', $target = 'ZZZ') {
 		$count = 0;
-		$target = 'ZZZ';
 
-		while ($current != $target) {
-			$dir = $directions[$count % strlen($directions)];
-			$current = $nodes[$current][$dir];
-			$count++;
+		if (isset($nodes[$current])) {
+			while (!preg_match('/^' . $target . '$/', $current)) {
+				$dir = $directions[$count % strlen($directions)];
+				$current = $nodes[$current][$dir];
+				$count++;
+			}
 		}
 
 		return $count;
@@ -30,5 +30,22 @@
 	$part1 = findPath($directions, $nodes);
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	function findAllPaths($directions, $nodes) {
+		$count = [];
+
+		foreach (array_keys($nodes) as $n) {
+			if ($n[strlen($n) - 1] == 'A') {
+				$count[$n] = findPath($directions, $nodes, $n, '..Z');
+			}
+		}
+
+		$result = 1;
+		foreach ($count as $c) {
+			$result = lcm($result, $c);
+		}
+
+		return $result;
+	}
+
+	$part2 = findAllPaths($directions, $nodes);
+	echo 'Part 2: ', $part2, "\n";
