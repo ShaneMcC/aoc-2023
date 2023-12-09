@@ -27,23 +27,21 @@
 		$diffs = $set;
 		$list = [];
 
-		$list[] = $diffs;
+		$list[] = [0, ...$diffs, 0];
 		while (true) {
 			$diffs = getDifferences($diffs);
-			$list[] = $diffs;
+			$list[] = [0, ...$diffs, 0];
 			foreach ($diffs as $d) { if ($d !== 0) { continue 2; }}
 			break;
 		}
 
-		$list[count($list) - 1][] = 0;
-		array_unshift($list[count($list) - 1], 0);
-
+		// Fix start/end
 		for ($i = count($list) - 2; $i >= 0; $i--) {
-			$lowerList = $list[$i + 1];
-			$thisList = $list[$i];
+			$lowerList = &$list[$i + 1];
+			$thisList = &$list[$i];
 
-			$list[$i][] = ($lowerList[count($lowerList) - 1] + $thisList[count($thisList) - 1]);
-			array_unshift($list[$i], ($thisList[0] - $lowerList[0]));
+			$thisList[count($thisList) - 1] = ($lowerList[count($lowerList) - 1] + $thisList[count($thisList) - 2]);
+			$thisList[0] = ($thisList[1] - $lowerList[0]);
 		}
 
 		if (isDebug()) {
