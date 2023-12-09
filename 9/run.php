@@ -11,26 +11,21 @@
 		$entries[] = $nums;
 	}
 
-	function getDifferences($set) {
-		$diffs = [];
-		$last = false;
-		foreach ($set as $s) {
-			if ($last !== false) {
-				$diffs[] = $s - $last;
-			}
-			$last = $s;
-		}
-		return $diffs;
-	}
-
-	function getNextValues($set) {
-		$diffs = $set;
-		$list = [];
-
-		$list[] = [0, ...$diffs, 0];
+	function getNextValues($startValues) {
+		$values = $startValues;
+		$list = [[0, ...$values, 0]];
 		do {
-			$diffs = getDifferences($diffs);
+			$diffs = [];
+			$last = false;
+			foreach ($values as $v) {
+				if ($last !== false) {
+					$diffs[] = $v - $last;
+				}
+				$last = $v;
+			}
+
 			$list[] = [0, ...$diffs, 0];
+			$values = $diffs;
 		} while (min($diffs) !== 0 || max($diffs) !== 0);
 
 		// Fix start/end
