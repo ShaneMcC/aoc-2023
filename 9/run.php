@@ -28,12 +28,10 @@
 		$list = [];
 
 		$list[] = [0, ...$diffs, 0];
-		while (true) {
+		do {
 			$diffs = getDifferences($diffs);
 			$list[] = [0, ...$diffs, 0];
-			foreach ($diffs as $d) { if ($d !== 0) { continue 2; }}
-			break;
-		}
+		} while (min($diffs) !== 0 || max($diffs) !== 0);
 
 		// Fix start/end
 		for ($i = count($list) - 2; $i >= 0; $i--) {
