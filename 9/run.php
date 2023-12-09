@@ -23,7 +23,7 @@
 		return $diffs;
 	}
 
-	function getNextValue($set) {
+	function getNextValues($set) {
 		$diffs = $set;
 		$list = [];
 
@@ -36,27 +36,30 @@
 		}
 
 		$list[count($list) - 1][] = 0;
+		array_unshift($list[count($list) - 1], 0);
+
 		for ($i = count($list) - 2; $i >= 0; $i--) {
 			$lowerList = $list[$i + 1];
 			$thisList = $list[$i];
 
 			$list[$i][] = ($lowerList[count($lowerList) - 1] + $thisList[count($thisList) - 1]);
+			array_unshift($list[$i], ($thisList[0] - $lowerList[0]));
 		}
 
-		echo "==========", "\n";
-		foreach ($list as $l) {
-			echo json_encode($l), "\n";
+		if (isDebug()) {
+			echo "==========", "\n";
+			foreach ($list as $l) { echo json_encode($l), "\n"; }
+			echo "==========", "\n";
 		}
-		echo "==========", "\n";
 
-		return $list[0][count($list[0]) - 1];
+		return [$list[0][0], $list[0][count($list[0]) - 1]];
 	}
 
-	$part1 = 0;
+	$part1 = $part2 = 0;
 	foreach ($entries as $e) {
-		$part1 += getNextValue($e);
+		$next = getNextValues($e);
+		$part1 += $next[1];
+		$part2 += $next[0];
 	}
 	echo 'Part 1: ', $part1, "\n";
-
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	echo 'Part 2: ', $part2, "\n";
