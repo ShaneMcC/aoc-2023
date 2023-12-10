@@ -112,7 +112,7 @@
 		$inside = false;
 		debugOut('O');
 		foreach ($row as $x => $cell) {
-			if (in_array([$x, $y], $path)) {
+			if ($currentMap[$y][$x] == '#') {
 				if (in_array($cell, ['|', 'J', 'L', 'S'])) {
 					$inside = !$inside;
 				}
