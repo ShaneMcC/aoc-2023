@@ -113,7 +113,7 @@
 		debugOut('O');
 		foreach ($row as $x => $cell) {
 			if ($currentMap[$y][$x] == '#') {
-				if (in_array($cell, ['|', 'J', 'L', 'S'])) {
+				if (in_array($cell, ['|', 'J', 'L']) || ($cell == 'S' && $direction == 'up')) {
 					$inside = !$inside;
 				}
 				debugOut('#');
