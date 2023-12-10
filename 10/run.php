@@ -2,20 +2,24 @@
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
 
-	$replacements = [
-	                 '|' => '│',
-	                 '-' => '━',
-	                 '7' => '┑',
-	                 'J' => '┙',
-	                 'L' => '┕',
-	                 'F' => '┍',
-					];
-	$input = str_replace(array_keys($replacements), array_values($replacements), getInputContent());
-	$map = [];
-	foreach (explode("\n", $input) as $line) {
-		if (!empty($line)) {
-			$map[] = mb_str_split($line);
+	if (isDebug()) {
+		$replacements = [
+						'|' => '│',
+						'-' => '━',
+						'7' => '┑',
+						'J' => '┙',
+						'L' => '┕',
+						'F' => '┍',
+						];
+		$input = str_replace(array_keys($replacements), array_values($replacements), getInputContent());
+		$map = [];
+		foreach (explode("\n", $input) as $line) {
+			if (!empty($line)) {
+				$map[] = mb_str_split($line);
+			}
 		}
+	} else {
+		$map = getInputMap();
 	}
 
 	function findStart($map) {
