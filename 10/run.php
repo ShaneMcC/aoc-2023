@@ -23,6 +23,8 @@
 	function checkLoops($map, $start, $direction) {
 		global $directions;
 
+		$startDir = $direction;
+
 		debugOut('Begin in ', $direction, "\n");
 
 		$currentMap = $map;
@@ -31,32 +33,34 @@
 		$count = 0;
 		$thisTile = $currentMap[$y][$x] ?? FALSE;
 		$path = [];
-		$path[] = $thisTile;
+		$path[] = [$x, $y];
 
+		$currentMap[$y][$x] = '#';
 		while (true) {
 			$count++;
 			$dir = $directions[$direction];
 			$y = $y + $dir[1];
 			$x = $x + $dir[0];
 
-			$nextTile = $currentMap[$y][$x] ?? FALSE;
+			$nextTile = $map[$y][$x] ?? FALSE;
+			$currentMap[$y][$x] = '#';
 			debugOut('Tile: ', $thisTile, ' => ', $direction, ' => ', $nextTile, ' => ');
 			$thisTile = $nextTile;
 
-			$path[] = $thisTile;
+			$path[] = [$x, $y];
 
 			if ($nextTile === False) {
 				debugOut('Bad tile access attempt.');
-				return [False, $path];
+				return [False, $path, $currentMap];
 			} if ($nextTile == '.') {
 				debugOut('Nothing', "\n");
-				return [False, $path];
+				return [False, $path, $currentMap];
 			} else if ($nextTile == 'S') {
-				debugOut("\n");
+				debugOut('Loop of length ' . $count . ' from ' . $startDir, "\n");
 				if (isDebug()) {
-					drawMap($currentMap, true, 'Loop of length ' . $count);
+					drawMap($currentMap, true, 'Loop of length ' . $count . ' from ' . $startDir);
 				}
-				return [True, $path];
+				return [True, $path, $currentMap];
 			} else {
 				$newDirection = FALSE;
 				if ($nextTile == '|' || $nextTile == '-') {
@@ -77,7 +81,7 @@
 
 				if ($newDirection === False) {
 					debugOut(' Dead end.', "\n");
-					return [False, $path];
+					return [False, $path, $currentMap];
 				} else {
 					debugOut(" change to: ", $newDirection, "\n");
 					$direction = $newDirection;
@@ -91,13 +95,38 @@
 	}
 
 	foreach (array_keys($directions) as $direction) {
-		[$result, $path] = checkLoops($map, $start, $direction);
-
+		[$result, $path, $currentMap] = checkLoops($map, $start, $direction);
+		array_pop($path);
 		if ($result) { break; }
 	}
 
-	$part1 = floor(count($path) / 2);
+	$part1 = count($path) / 2;
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	if (isDebug()) {
+		drawMap($currentMap, true, 'Blocked Out');
+	}
+
+	$count = 0;
+	foreach ($map as $y => $row) {
+		$inside = false;
+		debugOut('O');
+		foreach ($row as $x => $cell) {
+			if (in_array([$x, $y], $path)) {
+				if (in_array($cell, ['|', 'J', 'L', 'S'])) {
+					$inside = !$inside;
+				}
+				debugOut('#');
+			} else {
+				if ($inside) {
+					$count++;
+					debugOut('I');
+				} else {
+					debugOut('O');
+				}
+			}
+		}
+		debugOut("\n");
+	}
+
+	echo 'Part 2: ', $count, "\n";
