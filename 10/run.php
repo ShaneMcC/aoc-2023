@@ -15,7 +15,7 @@
 		$map = [];
 		foreach (explode("\n", $input) as $line) {
 			if (!empty($line)) {
-				$map[] = mb_str_split($line);
+				$map[] = preg_split('//u', $line);
 			}
 		}
 	} else {
