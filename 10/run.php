@@ -1,7 +1,22 @@
 #!/usr/bin/php
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
-	$map = getInputMap();
+
+	$replacements = [
+	                 '|' => '│',
+	                 '-' => '━',
+	                 '7' => '┑',
+	                 'J' => '┙',
+	                 'L' => '┕',
+	                 'F' => '┍',
+					];
+	$input = str_replace(array_keys($replacements), array_values($replacements), getInputContent());
+	$map = [];
+	foreach (explode("\n", $input) as $line) {
+		if (!empty($line)) {
+			$map[] = mb_str_split($line);
+		}
+	}
 
 	function findStart($map) {
 		foreach (cells($map) as [$x,$y,$cell]) {
@@ -35,7 +50,7 @@
 		$path = [];
 		$path[] = [$x, $y];
 
-		$currentMap[$y][$x] = '#';
+		$currentMap[$y][$x] = "\033[1;33m" . $currentMap[$y][$x] . "\033[0m";
 		while (true) {
 			$count++;
 			$dir = $directions[$direction];
@@ -43,7 +58,7 @@
 			$x = $x + $dir[0];
 
 			$nextTile = $map[$y][$x] ?? FALSE;
-			$currentMap[$y][$x] = '#';
+			$currentMap[$y][$x] = "\033[1;33m" . $currentMap[$y][$x] . "\033[0m";
 			debugOut('Tile: ', $thisTile, ' => ', $direction, ' => ', $nextTile, ' => ');
 			$thisTile = $nextTile;
 
@@ -63,22 +78,21 @@
 				return [True, $path, $currentMap];
 			} else {
 				$newDirection = FALSE;
-				if ($nextTile == '|' || $nextTile == '-') {
+				if ($nextTile == '|' || $nextTile == '-' || $nextTile == '│' || $nextTile == '━') {
 					$newDirection = $direction;
-				} else if ($nextTile == '7') {
+				} else if ($nextTile == '7' || $nextTile == '┑') {
 					if ($direction == 'right') { $newDirection = 'down'; }
 					else if ($direction == 'up') { $newDirection = 'left'; }
-				} else if ($nextTile == 'J') {
+				} else if ($nextTile == 'J' || $nextTile == '┙') {
 					if ($direction == 'right') { $newDirection = 'up'; }
 					else if ($direction == 'down') { $newDirection = 'left'; }
-				} else if ($nextTile == 'L') {
+				} else if ($nextTile == 'L' || $nextTile == '┕') {
 					if ($direction == 'left') { $newDirection = 'up'; }
 					else if ($direction == 'down') { $newDirection = 'right'; }
-				} else if ($nextTile == 'F') {
+				} else if ($nextTile == 'F' || $nextTile == '┍') {
 					if ($direction == 'left') { $newDirection = 'down'; }
 					else if ($direction == 'up') { $newDirection = 'right'; }
 				}
-
 				if ($newDirection === False) {
 					debugOut(' Dead end.', "\n");
 					return [False, $path, $currentMap];
@@ -103,30 +117,31 @@
 	$part1 = count($path) / 2;
 	echo 'Part 1: ', $part1, "\n";
 
-	if (isDebug()) {
-		drawMap($currentMap, true, 'Blocked Out');
-	}
-
 	$count = 0;
+	$outMap = [];
 	foreach ($map as $y => $row) {
 		$inside = false;
-		debugOut('O');
+		$thisRow = [];
 		foreach ($row as $x => $cell) {
-			if ($currentMap[$y][$x] == '#') {
-				if (in_array($cell, ['|', 'J', 'L']) || ($cell == 'S' && $direction == 'up')) {
+			if ($currentMap[$y][$x] != $cell) {
+				if (in_array($cell, ['|', 'J', 'L', '│', '┙', '┕']) || ($cell == 'S' && $direction == 'up')) {
 					$inside = !$inside;
 				}
-				debugOut('#');
+				$thisRow[] = $currentMap[$y][$x];
 			} else {
 				if ($inside) {
 					$count++;
-					debugOut('I');
+					$thisRow[] = "\033[0;32m" . 'I' . "\033[0m";
 				} else {
-					debugOut('O');
+					$thisRow[] = "\033[1;31m" . 'O' . "\033[0m";
 				}
 			}
 		}
-		debugOut("\n");
+		$outMap[] = $thisRow;
+	}
+
+	if (isDebug()) {
+		drawMap($outMap, true, 'Part 2 - ' . $count);
 	}
 
 	echo 'Part 2: ', $count, "\n";
