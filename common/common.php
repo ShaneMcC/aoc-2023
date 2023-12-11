@@ -584,7 +584,7 @@
 	 *
 	 * @return false|string[] Matches array, or empty array if no matches.
 	 */
-	function preg_match_return($pattern, $subject, $flags = 0, $offset = 0): false|array {
+	function preg_match_return($pattern, $subject, $flags = 0, $offset = 0)/*: false|array*/ {
 		if (preg_match($pattern, $subject, $m, $flags, $offset)) {
 			return $m;
 		} else {
@@ -631,7 +631,7 @@
 	 * @param mixed $test Function to check if we have found what we want. Should return <-1|0|1> for <check lower|yes|check higher>
 	 * @return int|false Position in list item was found, or false.
 	 */
-	function doBinarySearch($low, $high, $test): int|false {
+	function doBinarySearch($low, $high, $test)/*: int|false*/ {
 		while ($low <= $high) {
 			$mid = floor(($low + $high) / 2);
 
