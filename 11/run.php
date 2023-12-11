@@ -3,7 +3,8 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputMap();
 
-	function expandGalaxy($map, $gap) {
+	function expandGalaxy($map, $gapSize = 1) {
+		$gapSize = max(0, $gapSize - 1);
 		$newMap = [];
 
 		$yVal = 0;
@@ -11,7 +12,7 @@
 			$newMap[$yVal] = $row;
 			$acv = array_count_values($row);
 			if (isset($acv['.']) && $acv['.'] == count($row)) {
-				$yVal += $gap;
+				$yVal += $gapSize;
 			}
 			$yVal++;
 		}
@@ -30,7 +31,7 @@
 			$newRow = [];
 			$incX = 0;
 			foreach ($row as $x => $cell) {
-				if (in_array($x, $dupeCols)) { $incX += $gap; }
+				if (in_array($x, $dupeCols)) { $incX += $gapSize; }
 				$newX = $x + $incX;
 				$newRow[$newX] = $cell;
 			}
@@ -40,8 +41,8 @@
 		return $newMap;
 	}
 
-	function getManhattanCount($input, $gap = 1) {
-		$expanded = expandGalaxy($input, $gap);
+	function getManhattanCount($input, $gapSize = 2) {
+		$expanded = expandGalaxy($input, $gapSize);
 		$galaxies = findCells($expanded, '#');
 
 		// drawSparseMap($expanded, '@', true);
@@ -57,5 +58,5 @@
 
 		return $result;
 	}
-	echo 'Part 1: ', getManhattanCount($input, 1), "\n";
-	echo 'Part 2: ', getManhattanCount($input, 1000000-1), "\n";
+	echo 'Part 1: ', getManhattanCount($input, 2), "\n";
+	echo 'Part 2: ', getManhattanCount($input, 1000000), "\n";
