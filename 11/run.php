@@ -3,16 +3,17 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputMap();
 
-	function expandGalaxy($map) {
+	function expandGalaxy($map, $gap) {
 		$newMap = [];
 
+		$yVal = 0;
 		foreach ($map as $row) {
-			$newMap[] = $row;
-
+			$newMap[$yVal] = $row;
 			$acv = array_count_values($row);
 			if (isset($acv['.']) && $acv['.'] == count($row)) {
-				$newMap[] = array_fill(0, count($row), '@');
+				$yVal += $gap;
 			}
+			$yVal++;
 		}
 
 		$dupeCols = [];
@@ -24,44 +25,37 @@
 			}
 		}
 
-		for ($y = 0; $y < count($newMap); $y++) {
-			foreach ($dupeCols as $i => $col) {
-				array_splice($newMap[$y], $col + $i, 0, ['@']);
+
+		foreach ($newMap as $y => $row) {
+			$newRow = [];
+			$incX = 0;
+			foreach ($row as $x => $cell) {
+				if (in_array($x, $dupeCols)) { $incX += $gap; }
+				$newX = $x + $incX;
+				$newRow[$newX] = $cell;
 			}
+			$newMap[$y] = $newRow;
 		}
 
 		return $newMap;
 	}
 
-	$expanded = expandGalaxy($input);
-	$galaxies = findCells($expanded, '#');
+	function getManhattanCount($input, $gap = 1) {
+		$expanded = expandGalaxy($input, $gap);
+		$galaxies = findCells($expanded, '#');
 
-	$part2 = $part1 = 0;
-	foreach ($galaxies as $g1num => $g1) {
-		foreach ($galaxies as $g2num => $g2) {
-			if ($g1num > $g2num) {
-				$dist = manhattan($g1[0], $g1[1], $g2[0], $g2[1]);
-				$part1 += $dist;
+		// drawSparseMap($expanded, '@', true);
 
-				// Find how many gaps there are.
-				$yGaps = $xGaps = 0;
-				for ($x = min($g1[0], $g2[0]); $x <= max($g1[0], $g2[0]); $x++) {
-					if ($expanded[0][$x] == '@') {
-						$xGaps++;
-					}
+		$result = 0;
+		foreach ($galaxies as $g1num => $g1) {
+			foreach ($galaxies as $g2num => $g2) {
+				if ($g1num > $g2num) {
+					$result += manhattan($g1[0], $g1[1], $g2[0], $g2[1]);
 				}
-
-				for ($y = min($g1[1], $g2[1]); $y <= max($g1[1], $g2[1]); $y++) {
-					if ($expanded[$y][0] == '@') {
-						$yGaps++;
-					}
-				}
-
-				$gapSize = 1000000 - 2;
-				$part2 += $dist + ($gapSize * $yGaps) + ($gapSize * $xGaps);
 			}
 		}
-	}
 
-	echo 'Part 1: ', $part1, "\n";
-	echo 'Part 2: ', $part2, "\n";
+		return $result;
+	}
+	echo 'Part 1: ', getManhattanCount($input, 1), "\n";
+	echo 'Part 2: ', getManhattanCount($input, 1000000-1), "\n";
