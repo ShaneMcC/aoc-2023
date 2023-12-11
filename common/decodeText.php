@@ -62,7 +62,16 @@
 		}
 	}
 
-	function decodeText($image, $width = 5, $height = 6, $gap = 0) {
+	/**
+	 * Decode some ascii text in AoC font.
+	 *
+	 * @param $image The image input
+	 * @param $width How wide is each character
+	 * @param $height How tall is each character
+	 * @param $gap How much gap between each character
+	 * @return string The decoded text
+	 */
+	function decodeText($image, $width = 5, $height = 6, $gap = 0): string {
 		global $encodedChars;
 
 		$text = '';

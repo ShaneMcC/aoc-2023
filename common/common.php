@@ -16,8 +16,10 @@
 
 	/**
 	 * Get the answer for this day if known.
+	 *
+	 * @return string Answer string
 	 */
-	function getAnswer($part) {
+	function getAnswer($part): string {
 		$file = realpath(dirname($_SERVER['PHP_SELF'])) . '/answers.txt';
 
 		$answers = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -30,8 +32,10 @@
 
 	/**
 	 * Get the answers to both parts of the day.
+	 *
+	 * @return string[] Array of answers
 	 */
-	function getAnswers() {
+	function getAnswers(): array {
 		return [1 => getAnswer(1), 2 => getAnswer(2)];
 	}
 
@@ -42,9 +46,9 @@
 	 * no file specified on the CLI then test mode uses 'test.txt' otherwise
 	 * fallback to 'input.txt'
 	 *
-	 * @return Filename to read from.
+	 * @return string Filename to read from.
 	 */
-	function getInputFilename() {
+	function getInputFilename(): string {
 		global $__CLIOPTS;
 
 		if (getenv("TIMED") !== FALSE) {
@@ -69,9 +73,9 @@
 	 * Get the input as line groups.
 	 * Each group is separated by a blank line in the source file.
 	 * 	 *
-	 * @return File as array of array of lines.
+	 * @return string[] File as array of array of lines.
 	 */
-	function getInputLineGroups() {
+	function getInputLineGroups(): array {
 		$groups = [];
 		$group = [];
 		foreach (explode("\n", getInputContent()) as $line) {
@@ -91,9 +95,9 @@
 	/**
 	 * Get the input as a map.
 	 *
-	 * @return File as a grid[$y][$x].
+	 * @return string[][] File as a grid[$y][$x].
 	 */
-	function getInputMap() {
+	function getInputMap(): array {
 		$map = [];
 		foreach (getInputLines() as $row) { $map[] = str_split($row); }
 		return $map;
@@ -103,36 +107,36 @@
 	 * Get the input as a sparse map.
 	 *
 	 * @param $remove (Default: ['.', ' ']) Array of characters to remove.
-	 * @return File as a sparse grid[$y][$x].
+	 * @return string[][] File as a sparse grid[$y][$x].
 	 */
-	function getInputSparseMap($remove = ['.', ' ']) {
+	function getInputSparseMap($remove = ['.', ' ']): array {
 		return sparseMap(getInputMap(), $remove);
 	}
 
 	/**
 	 * Get the input as an array of lines.
 	 *
-	 * @return File as an array of lines. Empty lines are ignored.
+	 * @return string[] File as an array of lines. Empty lines are ignored.
 	 */
-	function getInputLines() {
+	function getInputLines(): array {
 		return file(getInputFilename(), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 	}
 
 	/**
 	 * Get the input as a single string.
 	 *
-	 * @return Whole file as a single string.
+	 * @return string Whole file as a single string.
 	 */
-	function getInputContent() {
+	function getInputContent(): string {
 		return file_get_contents(getInputFilename());
 	}
 
 	/**
 	 * Get the first line from the input.
 	 *
-	 * @return First line of input.
+	 * @return string First line of input.
 	 */
-	function getInputLine() {
+	function getInputLine(): string {
 		$lines = getInputLines();
 		return isset($lines[0]) ? trim($lines[0]) : '';
 	}
@@ -142,9 +146,9 @@
 	 *
 	 * Debug mode usually results in more output.
 	 *
-	 * @return True for debug mode, else false.
+	 * @return bool True for debug mode, else false.
 	 */
-	function isDebug() {
+	function isDebug(): bool {
 		global $__CLIOPTS;
 
 		return isset($__CLIOPTS['d']) || isset($__CLIOPTS['debug']);
@@ -164,9 +168,9 @@
 	 *
 	 * Test mode reads from test.txt not input.txt by default.
 	 *
-	 * @return True for test mode, else false.
+	 * @return bool True for test mode, else false.
 	 */
-	function isTest() {
+	function isTest(): bool {
 		global $__CLIOPTS;
 
 		return isset($__CLIOPTS['t']) || isset($__CLIOPTS['test']);
@@ -176,9 +180,9 @@
 	 * array_sum on multi-dimensional arrays.
 	 *
 	 * @param $array Array to sum.
-	 * @return Sum of all vaules in array.
+	 * @return int Sum of all vaules in array.
 	 */
-	function multi_array_sum($array) {
+	function multi_array_sum($array): int {
 		$result = 0;
 		foreach ($array as $a) { $result += (is_array($a) ? multi_array_sum($a) : $a); }
 		return $result;
@@ -191,9 +195,9 @@
 	 * @param $y1 Point 1, Y location.
 	 * @param $x2 Point 2, X location.
 	 * @param $y2 Point 2, Y location.
-	 * @return Manhattan distance.
+	 * @return int Manhattan distance.
 	 */
-	function manhattan($x1, $y1, $x2, $y2) {
+	function manhattan($x1, $y1, $x2, $y2): int {
 		return abs($x1 - $x2) + abs($y1 - $y2);
 	}
 
@@ -206,6 +210,7 @@
 	 * @param $endx Ending X value
 	 * @param $endy Ending Y value
 	 * @param $inclusive (Default: true) are endx/endy inclusive?
+	 * @return Generator of $x => $y pairs
 	 */
 	function yieldXY($startx, $starty, $endx, $endy, $inclusive = true) {
 		for ($x = $startx; $x <= ($inclusive ? $endx : $endx - 1); $x++) {
@@ -219,6 +224,7 @@
 	 * Generator to provide each cell of a grid.
 	 *
 	 * @param $grid Grid to look at.
+	 * @return Generator<array> of [$x, $y, $cell] items
 	 */
 	function cells($grid) {
 		foreach ($grid as $y => $row) {
@@ -233,9 +239,9 @@
 	 *
 	 * @param $grid Grid to look at.
 	 * @param $wanted Cell content to look for.
-	 * @return Matching cells.
+	 * @return array<int, int[]> Matching cells.
 	 */
-	function findCells($grid, $wanted) {
+	function findCells($grid, $wanted): array {
 		$cells = [];
 		foreach (cells($grid) as [$x, $y, $cell]) {
 			if ($cell == $wanted) {
@@ -253,8 +259,9 @@
 	 * @param $y Y point
 	 * @param $diagonal (Default: false) Include diagonals?
 	 * @param $self (Default: false) Include self?
+	 * @return array<int, int[]> Array of all existing adjacent cells
 	 */
-	function getAdjacentCells($grid, $x, $y, $diagonal = false, $self = false) {
+	function getAdjacentCells($grid, $x, $y, $diagonal = false, $self = false): array {
 		$adjacent = [];
 
 		if ($diagonal && isset($grid[$y - 1][$x - 1])) { $adjacent[] = [$x - 1, $y - 1]; }
@@ -279,6 +286,7 @@
 	 * @param $y Y point
 	 * @param $diagonal (Default: false) Include diagonals?
 	 * @param $self (Default: false) Include self?
+	 * @return array<int, int[]> Array of all possible adjacent cells.
 	 */
 	function getAllAdjacentCells($grid, $x, $y, $diagonal = false, $self = false) {
 		$adjacent = [];
@@ -301,9 +309,9 @@
 	 *
 	 * @param $grid Grid to look at
 	 * @param $matching Value to check for
-	 * @return count of $matching in $grid
+	 * @return int count of $matching in $grid
 	 */
-	function countCells($grid, $matching = '#') {
+	function countCells($grid, $matching = '#'): int {
 		$count = 0;
 
 		foreach ($grid as $row) {
@@ -319,14 +327,14 @@
 	 * $grid may be sparsely populated.
 	 *
 	 * @param $grid Input grid.
-	 * @return [$minX, $minY, $maxX, $maxY]
+	 * @return int[] Array of [$minX, $minY, $maxX, $maxY]
 	 */
-	function getBoundingBox($map, $padding = 0) {
+	function getBoundingBox($map, $padding = 0): array {
 		$minX = $minY = $maxX = $maxY = 0;
 		foreach ($map as $y => $row) {
 			$minY = min($minY, $y);
 			$maxY = max($maxY, $y);
-			foreach ($row as $x => $colour) {
+			foreach ($row as $x => $cell) {
 				$minX = min($minX, $x);
 				$maxX = max($maxX, $x);
 			}
@@ -412,9 +420,9 @@
 	 * Convert a sparse map into a non-sparse map
 	 *
 	 * @param $map Sparse map to convert
-	 * @return non-sparse version of $map
+	 * @return string[] non-sparse version of $map
 	 */
-	function desparseMap($map) {
+	function desparseMap($map): array {
 		[$minX, $minY, $maxX, $maxY] = getBoundingBox($map);
 
 		$newMap = [];
@@ -433,9 +441,9 @@
 	 *
 	 * @param $map Sparse map to convert
 	 * @param $remove (Default: ['.', ' ']) Array of characters to remove.
-	 * @return sparse version of $map
+	 * @return string[] sparse version of $map
 	 */
-	function sparseMap($map, $remove = ['.', ' ']) {
+	function sparseMap($map, $remove = ['.', ' ']): array {
 		[$minX, $minY, $maxX, $maxY] = getBoundingBox($map);
 
 		$newMap = [];
@@ -457,17 +465,17 @@
 	 *
 	 * @param $items Items to get permutations of.
 	 * @param $perms Ignore this param, used for recursion when caclulating permutations.
-	 * @return All permutations of $items;
+	 * @return string[] All permutations of $items;
 	 */
-	function getPermutations($items, $perms = array()) {
+	function getPermutations($items, $perms = []): array {
 		if (empty($items)) {
-			$return = array($perms);
+			$return = [$perms];
 		} else {
-			$return = array();
+			$return = [];
 			for ($i = count($items) - 1; $i >= 0; --$i) {
 				$newitems = $items;
 				$newperms = $perms;
-				list($foo) = array_splice($newitems, $i, 1);
+				[$foo] = array_splice($newitems, $i, 1);
 				array_unshift($newperms, $foo);
 				$return = array_merge($return, getPermutations($newitems, $newperms));
 			}
@@ -480,7 +488,7 @@
 	 *
 	 * @param $count Amount of values required in sum.
 	 * @param $sum Sum we need to add up to
-	 * @return Generator for all possible combinations.
+	 * @return Generator<string[]> for all possible combinations.
 	 */
 	function getCombinations($count, $sum) {
 	    if ($count == 1) {
@@ -500,9 +508,9 @@
 	 * @param $array Array to get sets from.
 	 * @param $maxLength Ignore sets larger than this size
 	 * @param $minLength Ignore sets smaller than this size
-	 * @return Array of sets.
+	 * @return array[] Array of sets.
 	 */
-	function getAllSets($array, $maxlength = PHP_INT_MAX, $minlength = 0) {
+	function getAllSets($array, $maxlength = PHP_INT_MAX, $minlength = 0): array {
 		$result = array(array());
 
 		foreach ($array as $element) {
@@ -523,9 +531,9 @@
 	 *
 	 * @param $num Number
 	 * @param $mod Modulus
-	 * @return Answer.
+	 * @return int Answer.
 	 */
-	function wrapmod($num, $mod) {
+	function wrapmod($num, $mod): int {
 		return (($num % $mod) + $mod) % $mod;
 	}
 
@@ -536,9 +544,9 @@
 	 * @param $array Array to sort
 	 * @param $extra (Default: null) Some of the sorting functions take an extra
 	 *               param. (Flags or a function or so.)
-	 * @return Sorted $array
+	 * @return array $array, but sorted.
 	 */
-	function sorted($method, $array, $extra = null) {
+	function sorted($method, $array, $extra = null): array {
 		call_user_func_array($method, ($extra == null) ? [&$array] : [&$array, $extra]);
 		return $array;
 	}
@@ -548,9 +556,9 @@
 	 *
 	 * @param $haystack Haystack to search
 	 * @param $needle Needle to search for
-	 * @return True if $haystack starts with $needle.
+	 * @return bool True if $haystack starts with $needle.
 	 */
-	function startsWith($haystack, $needle) {
+	function startsWith($haystack, $needle): bool {
 		$length = strlen($needle);
 		return (substr($haystack, 0, $length) === $needle);
 	}
@@ -560,9 +568,9 @@
 	 *
 	 * @param $haystack Haystack to search
 	 * @param $needle Needle to search for
-	 * @return True if $haystack ends with $needle.
+	 * @return bool True if $haystack ends with $needle.
 	 */
-	function endsWith($haystack, $needle) {
+	function endsWith($haystack, $needle): bool {
 		$length = strlen($needle);
 		if ($length == 0) {
 			return true;
@@ -574,9 +582,9 @@
 	/**
 	 * preg_match that returns just the matches.
 	 *
-	 * @return Matches array, or empty array if no matches.
+	 * @return false|string[] Matches array, or empty array if no matches.
 	 */
-	function preg_match_return($pattern, $subject, $flags = 0, $offset = 0) {
+	function preg_match_return($pattern, $subject, $flags = 0, $offset = 0): false|array {
 		if (preg_match($pattern, $subject, $m, $flags, $offset)) {
 			return $m;
 		} else {
@@ -585,7 +593,14 @@
 	}
 
 	// LCM and GCD from https://stackoverflow.com/questions/147515/least-common-multiple-for-3-or-more-numbers
-	function gcd($a, $b) {
+	/**
+	 * Greatest Common Devisor between 2 values
+	 *
+	 * @param int $a Value A
+	 * @param int $b Value B
+	 * @return int GCD for A and B.
+	 */
+	function gcd($a, $b): int {
 		$t = 0;
 		while ($b != 0){
 			$t = $b;
@@ -596,7 +611,14 @@
 		return $a;
 	}
 
-	function lcm($a, $b) {
+	/**
+	 * Least Common Multiple between 2 values
+	 *
+	 * @param int $a Value A
+	 * @param int $b Value B
+	 * @return int LCM for A and B.
+	 */
+	function lcm($a, $b): int {
 		return ($a * $b / gcd($a, $b));
 	}
 
@@ -609,7 +631,7 @@
 	 * @param mixed $test Function to check if we have found what we want. Should return <-1|0|1> for <check lower|yes|check higher>
 	 * @return int|false Position in list item was found, or false.
 	 */
-	function doBinarySearch($low, $high, $test) {
+	function doBinarySearch($low, $high, $test): int|false {
 		while ($low <= $high) {
 			$mid = floor(($low + $high) / 2);
 
@@ -633,9 +655,9 @@
 		 * (Credit to 'jgs' for the original wreath ascii)
 		 *
 		 * @param $colour Colourise the wreath.
-		 * @return The wreath
+		 * @return string The wreath
 		 */
-		function getWreath($colour = true) {
+		function getWreath($colour = true): string {
 				$canColour = $colour && (function_exists('posix_isatty') && posix_isatty(STDOUT)) || getenv('ANSICON') !== FALSE;
 
 				if ($canColour) {
@@ -672,9 +694,9 @@ WREATH;
 		 * taller)
 		 *
 		 * @param $colour Colourise the tree.
-		 * @return The tree
+		 * @return string The tree
 		 */
-		function getTree($colour = true) {
+		function getTree($colour = true): string {
 				$canColour = $colour && (function_exists('posix_isatty') && posix_isatty(STDOUT)) || getenv('ANSICON') !== FALSE;
 
 				if ($canColour) {
@@ -716,9 +738,9 @@ TREE;
 		 * (Credit to 'ldb' for the original Santa ascii, this was modified slightly)
 		 *
 		 * @param $colour Colourise the wreath.
-		 * @return The wreath
+		 * @return string The wreath
 		 */
-		function getSanta($colour = true) {
+		function getSanta($colour = true): string {
 				$canColour = $colour && (function_exists('posix_isatty') && posix_isatty(STDOUT)) || getenv('ANSICON') !== FALSE;
 
 				if ($canColour) {
@@ -762,9 +784,9 @@ SANTA;
 		 * (Credit to 'jgs' for the original present ascii)
 		 *
 		 * @param $colour Colourise the present.
-		 * @return The wreath
+		 * @return string The Present
 		 */
-		function getPresent($colour = true) {
+		function getPresent($colour = true): string {
 				$canColour = $colour && (function_exists('posix_isatty') && posix_isatty(STDOUT)) || getenv('ANSICON') !== FALSE;
 
 				if ($canColour) {
@@ -800,9 +822,9 @@ PRESENT;
 		 * (Credit to 'jgs' for the original snowman ascii)
 		 *
 		 * @param $colour Colourise the snowman.
-		 * @return The wreath
+		 * @return string The snowman
 		 */
-		function getSnowman($colour = true) {
+		function getSnowman($colour = true): string {
 				$canColour = $colour && (function_exists('posix_isatty') && posix_isatty(STDOUT)) || getenv('ANSICON') !== FALSE;
 
 				if ($canColour) {
@@ -840,9 +862,9 @@ SNOWMAN;
 		 * Output one of the ascii headers.
 		 *
 		 * @param $colour Colourise the header.
-		 * @return The header
+		 * @return void echos A random header
 		 */
-		function getAsciiHeader($colour = true) {
+		function getAsciiHeader($colour = true): void {
 			switch (rand(0,4)) {
 				case 0: echo getPresent($colour); break;
 				case 1: echo getSanta($colour); break;

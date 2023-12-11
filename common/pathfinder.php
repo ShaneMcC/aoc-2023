@@ -106,9 +106,9 @@
 		 * Get the possible options to move on from the current state.
 		 *
 		 * @param $state State we start from.
-		 * @return Array of new possible states.
+		 * @return array Array of new possible states.
 		 */
-		function getOptions($state) {
+		function getOptions($state): array {
 			list($curX, $curY) = $state['current'];
 
 			$options = [];
@@ -143,10 +143,10 @@
 		 *
 		 * @param $maxSteps [default: none] Maximum number of steps to move
 		 *                  before giving up.
-		 * @return Array [$finalState, $visted]. $finalState will be FALSE if we
+		 * @return array Array [$finalState, $visted]. $finalState will be FALSE if we
 		 *         hit $maxSteps. $visted is all the [X, Y] locations we visted.
 		 */
-		function solveMaze($maxSteps = -1) {
+		function solveMaze($maxSteps = -1): array {
 			$beginState = $this->initialState;
 
 			$visted = [$beginState['current']];

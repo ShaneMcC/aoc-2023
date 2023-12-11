@@ -4,34 +4,34 @@
 	 * Simple VM
 	 */
 	class VM {
-		/** Current location. */
+		/** @var int Current location. */
 		protected $location = -1;
 
-		/** Known Instructions. */
+		/** @var callable[] Known Instructions. */
 		protected $instrs = array();
 
-		/** Data to execute. */
+		/** @var array Data to execute. */
 		protected $data = array();
 
-		/** Read ahead optimisations */
+		/** @var array Read ahead optimisations */
 		protected $readAheads = array();
 
-		/** Our exit code. */
+		/** @var int Our exit code. */
 		protected $exitCode = 0;
 
-		/** Have we exited? */
+		/** @var bool Have we exited? */
 		protected $exited = false;
 
-		/** Output from the VM. */
+		/** @var string Output from the VM. */
 		protected $output = '';
 
-		/** VM Misc Data. */
+		/** @var array VM Misc Data. */
 		protected $miscData = [];
 
-		/** Is debug mode enabled? */
+		/** @var bool Is debug mode enabled? */
 		protected $debug = false;
 
-		/** Sleep time between debug output. */
+		/** @var int Sleep time between debug output. */
 		protected $sleep = 25000;
 
 		/**
@@ -79,18 +79,18 @@
 		/**
 		 * Get the vm exit code.
 		 *
-		 * @return The program exit code.
+		 * @return int The program exit code.
 		 */
-		function exitCode() {
+		function exitCode(): int {
 			return $this->exitCode;
 		}
 
 		/**
 		 * Has this VM exited?
 		 *
-		 * @return True if we have exited.
+		 * @return bool True if we have exited.
 		 */
-		function hasExited() {
+		function hasExited(): bool {
 			return $this->exited;
 		}
 
@@ -104,18 +104,18 @@
 		/**
 		 * Get stored output.
 		 *
-		 * @return The stored output.
+		 * @return string The stored output.
 		 */
-		public function getOutput() {
+		public function getOutput(): string {
 			return $this->output;
 		}
 
 		/**
 		 * Get the length of the stored output.
 		 *
-		 * @return The length of the stored output.
+		 * @return int The length of the stored output.
 		 */
-		public function getOutputLength() {
+		public function getOutputLength(): int {
 			return strlen($this->output);
 		}
 
@@ -141,9 +141,9 @@
 		 * Get MISC VM Data.
 		 *
 		 * @param $data Data type
-		 * @return Data value or NULL
+		 * @return null|string Data value or NULL
 		 */
-		public function getMiscData($data) {
+		public function getMiscData($data): null|string {
 			return isset($this->miscData[$data]) ? $this->miscData[$data] : null;
 		}
 
@@ -152,8 +152,9 @@
 		 *
 		 * @param $data Data type
 		 * @param $value Data value
+		 * @return VM $this of this VM.
 		 */
-		public function setMiscData($data, $value) {
+		public function setMiscData($data, $value): VM {
 			$this->miscData[$data] = $value;
 			return $this;
 		}
@@ -175,9 +176,10 @@
 		 * Get the instruction function by the given name.
 		 *
 		 * @param $instr Instruction name.
-		 * @return Instruction function.
+		 * @return callable Instruction function.
+		 * @throws NoSuchInstrException if the instruction does not exist
 		 */
-		public function getInstr($instr) {
+		public function getInstr($instr): callable {
 			if (isset($this->instrs[$instr])) { return $this->instrs[$instr]; }
 			throw new NoSuchInstrException('Unknown Instr: ' . $instr);
 		}
@@ -187,19 +189,18 @@
 		 *
 		 * @param $instr Instruction name.
 		 * @param $function New function.
-		 * @return Instruction function.
 		 */
 		public function setInstr($instr, $function) {
 			$this->instrs[$instr] = $function;
 		}
 
 		/**
-		 * Get the data at the given location.
+		 * Check for data at the given location.
 		 *
 		 * @param $location Data location.
-		 * @return Data from location.
+		 * @return bool True if there is data at the location.
 		 */
-		public function hasData($loc) {
+		public function hasData($loc): bool {
 			return isset($this->data[$loc]);
 		}
 
@@ -207,9 +208,10 @@
 		 * Get the data at the given location.
 		 *
 		 * @param $location Data location (or NULL for current).
-		 * @return Data from location.
+		 * @return string Data from location.
+		 * @throws BadDataLocationException If there is no such location
 		 */
-		public function getData($loc = null) {
+		public function getData($loc = null): string {
 			if ($loc === null) { $loc = $this->getLocation(); }
 			if (isset($this->data[$loc])) { return $this->data[$loc]; }
 			throw new BadDataLocationException('Unknown Data Location: ' . $loc);
@@ -220,6 +222,7 @@
 		 *
 		 * @param $location Data location (or NULL for current).
 		 * @param $val New Value
+		 * @throws BadDataLocationException If there is no such location
 		 */
 		public function setData($loc, $val) {
 			if ($loc === null) { $loc = $this->getLocation(); }
@@ -238,18 +241,18 @@
 		/**
 		 * Get the current execution location.
 		 *
-		 * @return Location of current execution.
+		 * @return int Location of current execution.
 		 */
-		function getLocation() {
+		function getLocation(): int {
 			return $this->location;
 		}
 
 		/**
 		 * Get the next execution location.
 		 *
-		 * @return Location of next execution.
+		 * @return int Location of next execution.
 		 */
-		function getNextLocation() {
+		function getNextLocation(): int {
 			return $this->location + 1;
 		}
 
@@ -267,10 +270,10 @@
 		/**
 		 * Step a single instruction.
 		 *
-		 * @return True if we executed something, else false if we have no more
+		 * @return bool True if we executed something, else false if we have no more
 		 *         to execute.
 		 */
-		function step() {
+		function step(): bool {
 			$startLocation = $this->location;
 			if (!$this->exited && isset($this->data[$this->location + 1])) {
 				$this->location++;
@@ -305,8 +308,10 @@
 
 		/**
 		 * Actually do what we need to for this step.
+		 *
+		 * @return true Returns true.
 		 */
-		function doStep() {
+		function doStep(): true {
 			$next = $this->data[$this->location];
 			if ($this->debug) {
 				if (isset($this->miscData['pid'])) {
@@ -341,10 +346,10 @@
 		 *
 		 * We stop processing optimisations after the first non-FALSE return.
 		 *
-		 * @return FALSE if no optimisations were made, else a location index
+		 * @return bool|int FALSE if no optimisations were made, else a location index
 		 *         for the next instruction we should run.
 		 */
-		function doReadAheads() {
+		function doReadAheads(): bool|int {
 			foreach ($this->readAheads as $function) {
 				$return = call_user_func($function, $this);
 				if ($return !== FALSE && $return !== NULL) { return $return; }
@@ -374,7 +379,8 @@
 		/**
 		 * Parse instruction file into instruction array.
 		 *
-		 * @param $data Data to parse/
+		 * @param $data Data to parse.
+		 * @return string[] Data as an array.
 		 */
 		public static function parseInstrLines($input) {
 			$data = array();
@@ -390,9 +396,9 @@
 		 * Display an instruction as a string.
 		 *
 		 * @param $instr Instruction to get string representation for.
-		 * @return  String version of instruction.
+		 * @return string version of instruction.
 		 */
-		public static function instrToString($instr) {
+		public static function instrToString($instr): string {
 			return $instr[0] . ' [' . implode(' ', $instr[1]) . ']';
 		}
 	}
