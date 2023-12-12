@@ -448,9 +448,9 @@
 
 		$newMap = [];
 		for ($y = $minY; $y <= $maxY; $y++) {
-			$newMap[$y] = [];
 			for ($x = $minX; $x <= $maxX; $x++) {
 				if (isset($map[$y][$x]) && !in_array($map[$y][$x], $remove)) {
+					if (!isset($newMap[$y])) { $newMap[$y] = []; }
 					$newMap[$y][$x] = $map[$y][$x];
 				}
 			}
