@@ -3,10 +3,10 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputSparseMap();
 
-	function expandGalaxy($map, $gapSize = 1) {
+	function findGalaxies($map, $gapSize = 1) {
 		$gapSize = max(0, $gapSize - 1);
 		[$minX, $minY, $maxX, $maxY] = getBoundingBox($map);
-		$newMap = [];
+		$galaxies = [];
 
 		$dupeCols = [];
 		for ($x = $minX; $x < $maxX; $x++) {
@@ -25,7 +25,7 @@
 					} else {
 						$cell = $map[$y][$x] ?? null;
 						if ($cell != null) {
-							$newMap[$yVal][$xVal] = $cell;
+							$galaxies[] = [$xVal, $yVal];
 						}
 					}
 					$xVal++;
@@ -36,12 +36,11 @@
 			$yVal++;
 		}
 
-		return $newMap;
+		return $galaxies;
 	}
 
 	function getManhattanCount($input, $gapSize = 2) {
-		$expanded = expandGalaxy($input, $gapSize);
-		$galaxies = findCells($expanded, '#');
+		$galaxies = findGalaxies($input, $gapSize);
 
 		$result = 0;
 		foreach ($galaxies as $g1num => $g1) {
