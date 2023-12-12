@@ -7,8 +7,8 @@ workdir: /code/%day%
 cmd: php /code/%day%/run.php
 environment:
  - TIMED=1
-daypath: %day%
-inputfile: %day%/input.txt
-answerfile: %day%/answers.txt
+daypath: "%day%"
+inputfile: "%day%/input.txt"
+answerfile: "%day%/answers.txt"
 common:
  - common
