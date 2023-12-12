@@ -1,4 +1,4 @@
---
+---
 version: 1
 language: PHP
 dockerfile: docker/Dockerfile
