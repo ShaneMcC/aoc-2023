@@ -648,6 +648,29 @@
 		return false;
 	}
 
+	if (!function_exists('str_contains')) {
+		function str_contains($haystack, $needle) {
+			return stripos($haystack, $needle) !== false;
+		}
+	}
+
+	/**
+	 * Compute and cache a result.
+	 *
+	 * @param string $key Key to cache with. For example `$key = json_encode([__FILE__, __LINE__, func_get_args()]);`
+	 * @param callable $function
+	 * @return mixed Result of calling $function
+	 */
+	function storeCachedResult($key, $function) {
+		static $_CACHE = [];
+
+		if (!isset($_CACHE[$key])) {
+			$_CACHE[$key] = $function();
+		}
+
+		return $_CACHE[$key];
+	}
+
 	// Remove unneeded stuff when timing.
 	if (getenv("TIMED") === FALSE) {
 		/**
