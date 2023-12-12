@@ -1,41 +1,39 @@
 #!/usr/bin/php
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
-	$input = getInputMap();
+	$input = getInputSparseMap();
 
 	function expandGalaxy($map, $gapSize = 1) {
 		$gapSize = max(0, $gapSize - 1);
+		[$minX, $minY, $maxX, $maxY] = getBoundingBox($map);
 		$newMap = [];
 
-		$yVal = 0;
-		foreach ($map as $row) {
-			$newMap[$yVal] = $row;
-			$acv = array_count_values($row);
-			if (isset($acv['.']) && $acv['.'] == count($row)) {
+		$dupeCols = [];
+		for ($x = $minX; $x < $maxX; $x++) {
+			if (empty(array_column($map, $x))) {
+				$dupeCols[$x] = true;
+			}
+		}
+
+		$yVal = $minY;
+		for ($y = $minY; $y <= $maxY; $y++) {
+			if (isset($map[$y])) {
+				$xVal = $minX;
+				for ($x = $minX; $x <= $maxX; $x++) {
+					if (isset($dupeCols[$x])) {
+						$xVal += $gapSize;
+					} else {
+						$cell = $map[$y][$x] ?? null;
+						if ($cell != null) {
+							$newMap[$yVal][$xVal] = $cell;
+						}
+					}
+					$xVal++;
+				}
+			} else {
 				$yVal += $gapSize;
 			}
 			$yVal++;
-		}
-
-		$dupeCols = [];
-		for ($i = 0; $i < count($map[0]); $i++) {
-			$col = array_column($map, $i);
-			$acv = array_count_values($col);
-			if (isset($acv['.']) && $acv['.'] == count($col)) {
-				$dupeCols[] = $i;
-			}
-		}
-
-
-		foreach ($newMap as $y => $row) {
-			$newRow = [];
-			$incX = 0;
-			foreach ($row as $x => $cell) {
-				if (in_array($x, $dupeCols)) { $incX += $gapSize; }
-				$newX = $x + $incX;
-				$newRow[$newX] = $cell;
-			}
-			$newMap[$y] = $newRow;
 		}
 
 		return $newMap;
@@ -44,8 +42,6 @@
 	function getManhattanCount($input, $gapSize = 2) {
 		$expanded = expandGalaxy($input, $gapSize);
 		$galaxies = findCells($expanded, '#');
-
-		// drawSparseMap($expanded, '@', true);
 
 		$result = 0;
 		foreach ($galaxies as $g1num => $g1) {
