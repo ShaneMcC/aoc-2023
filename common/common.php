@@ -664,8 +664,8 @@
 	function storeCachedResult($key, $function) {
 		static $_CACHE = [];
 
-		if (!isset($_CACHE[$key])) {
-			$_CACHE[$key] = $function();
+		if (!array_key_exists($key, $_CACHE)) {
+			$_CACHE[$key] = is_callable($function) ? $function() : $function;
 		}
 
 		return $_CACHE[$key];
