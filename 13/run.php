@@ -9,48 +9,40 @@
 	}
 
 	function getSymmetry($map, $type, $ignore = []) {
-
-		if ($type == 'row') {
-			$typelen = count($map[0]);
-			$typecount = count($map);
-		} else {
-			$typelen = count($map);
-			$typecount = count($map[0]);
-		}
+		$colCount = count($map[0]);
+		$rowCount = count($map);
+		$typelen = ($type == 'row') ? $colCount : $rowCount;
+		$typecount = ($type == 'row') ? $rowCount : $colCount;
 
 		$symmetryPoints = array_fill(1, $typelen + 1, true);
 		if (is_array($ignore) && isset($ignore[$type]) && is_array($ignore[$type])) {
-			debugOut('Ignoring ', $type, ' => ', implode(', ', $ignore[$type]), "\n");
+			if (isDebug()) { echo "\t", 'Ignoring ', $type, ' => ', implode(', ', $ignore[$type]), "\n"; }
 			foreach ($ignore[$type] as $i) { unset($symmetryPoints[$i]); }
 		}
 
 		for ($t = 0; $t < $typecount; $t++) {
-			if ($type == 'row') {
-				$line = $map[$t];
-			} else {
-				$line = array_column($map, $t);
-			}
+			$line = ($type == 'row') ? $map[$t] : array_column($map, $t);
 
-			debugOut('Looking at ', $type, ': ', implode('', $line), "\n");
+			if (isDebug()) { echo "\t\t", 'Looking at ', $type, ' ', ($t + 1), ': ', implode('', $line), "\n"; }
 			foreach (array_keys($symmetryPoints) as $i) {
 				$beforeCount = $i;
 				$afterCount = $typelen - $i;
 				$len = min($beforeCount, $afterCount);
 
-				debugOut($i, ': (Size: ' . $beforeCount . '/' . $afterCount . ' = ' . $len . ')');
+				if (isDebug()) { echo "\t\t\t", $i, ': (Size: ' . $beforeCount . '/' . $afterCount . ' = ' . $len . ')'; }
 
 				$before = array_slice($line, $i - $len, $len);
 				$after = array_reverse(array_slice($line, $i, $len));
 
-				debugOut("\t", '[' . implode('', $before) . '] vs [' . implode('', $after) . '] => ');
+				if (isDebug()) { echo "\t\t\t\t", '[' . implode('', $before) . '] vs [' . implode('', $after) . '] => '; }
 				if ($len > 0 && $before == $after) {
-					debugOut("Same!\n");
+					if (isDebug()) { echo "Same!\n"; }
 				} else {
-					debugOut("Different.\n");
+					if (isDebug()) { echo "Different.\n"; }
 					unset($symmetryPoints[$i]);
 				}
 			}
-			debugOut("\n");
+			if (isDebug()) { echo "\n"; }
 
 			if (empty($symmetryPoints)) { break; }
 		}
@@ -59,16 +51,21 @@
 	}
 
 	function getSymmetryCount($n, $map, $ignore = []) {
+		if (isDebug()) { echo 'Map ', $n, ': ', "\n"; }
 		$colSymmetry = getSymmetry($map, 'row', $ignore);
 		if (!empty($colSymmetry)) {
-			debugOut('Map ', $n, ' col symmetry: ', $colSymmetry[0], "\n");
+			if (isDebug()) { echo "\t", 'Map ', $n, ' col symmetry: ', $colSymmetry[0], "\n"; }
 			return $colSymmetry[0];
+		} else {
+			if (isDebug()) { echo "\t", 'Map ', $n, ' has no col symmetry', "\n"; }
 		}
 
 		$rowSymmetry = getSymmetry($map, 'col', $ignore);
 		if (!empty($rowSymmetry)) {
-			debugOut('Map ', $n, ' row symmetry: ', $rowSymmetry[0], "\n");
+			if (isDebug()) { echo "\t", 'Map ', $n, ' row symmetry: ', $rowSymmetry[0], "\n"; }
 			return $rowSymmetry[0] * 100;
+		} else {
+			if (isDebug()) { echo "\t", 'Map ', $n, ' has no col symmetry', "\n"; }
 		}
 
 		return FALSE;
