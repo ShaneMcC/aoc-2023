@@ -73,7 +73,7 @@
 	 * Get the input as line groups.
 	 * Each group is separated by a blank line in the source file.
 	 * 	 *
-	 * @return string[] File as array of array of lines.
+	 * @return array[] File as array of array of lines.
 	 */
 	function getInputLineGroups(): array {
 		$groups = [];

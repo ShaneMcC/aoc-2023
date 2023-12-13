@@ -26,7 +26,7 @@
 
 			$list[] = [0, ...$diffs, 0];
 			$values = $diffs;
-		} while (min($diffs) !== 0 || max($diffs) !== 0);
+		} while (!empty($diffs) && (min($diffs) !== 0 || max($diffs) !== 0));
 
 		// Fix start/end
 		for ($i = count($list) - 2; $i >= 0; $i--) {
