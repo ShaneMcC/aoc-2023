@@ -8,7 +8,7 @@
 		$maps[] = $map;
 	}
 
-	function getSymmetry($map, $type) {
+	function getSymmetry($map, $type, $ignore = []) {
 
 		if ($type == 'row') {
 			$typelen = count($map[0]);
@@ -18,7 +18,12 @@
 			$typecount = count($map[0]);
 		}
 
-		$symmetryPoints = array_fill(0, $typelen, true);
+		$symmetryPoints = array_fill(1, $typelen + 1, true);
+		if (is_array($ignore) && isset($ignore[$type]) && is_array($ignore[$type])) {
+			debugOut('Ignoring ', $type, ' => ', implode(', ', $ignore[$type]), "\n");
+			foreach ($ignore[$type] as $i) { unset($symmetryPoints[$i]); }
+		}
+
 		for ($t = 0; $t < $typecount; $t++) {
 			if ($type == 'row') {
 				$line = $map[$t];
@@ -28,14 +33,14 @@
 
 			debugOut('Looking at ', $type, ': ', implode('', $line), "\n");
 			foreach (array_keys($symmetryPoints) as $i) {
-				$beforeCount = $i + 1;
-				$afterCount = $typelen - $i - 1;
+				$beforeCount = $i;
+				$afterCount = $typelen - $i;
 				$len = min($beforeCount, $afterCount);
 
 				debugOut($i, ': (Size: ' . $beforeCount . '/' . $afterCount . ' = ' . $len . ')');
 
-				$before = array_slice($line, $i + 1 - $len, $len);
-				$after = array_reverse(array_slice($line, $i + 1, $len));
+				$before = array_slice($line, $i - $len, $len);
+				$after = array_reverse(array_slice($line, $i, $len));
 
 				debugOut("\t", '[' . implode('', $before) . '] vs [' . implode('', $after) . '] => ');
 				if ($len > 0 && $before == $after) {
@@ -50,8 +55,20 @@
 			if (empty($symmetryPoints)) { break; }
 		}
 
-		if (!empty($symmetryPoints)) {
-			return array_keys($symmetryPoints)[0] + 1;
+		return array_keys($symmetryPoints);
+	}
+
+	function getSymmetryCount($n, $map, $ignore = []) {
+		$colSymmetry = getSymmetry($map, 'row', $ignore);
+		if (!empty($colSymmetry)) {
+			debugOut('Map ', $n, ' col symmetry: ', $colSymmetry[0], "\n");
+			return $colSymmetry[0];
+		}
+
+		$rowSymmetry = getSymmetry($map, 'col', $ignore);
+		if (!empty($rowSymmetry)) {
+			debugOut('Map ', $n, ' row symmetry: ', $rowSymmetry[0], "\n");
+			return $rowSymmetry[0] * 100;
 		}
 
 		return FALSE;
@@ -59,18 +76,26 @@
 
 	$part1 = 0;
 	foreach ($maps as $n => $map) {
-		$colSymmetry = getSymmetry($map, 'row');
-		if ($colSymmetry !== FALSE) {
-			debugOut('Map ', $n, ' col symmetry: ', $colSymmetry, "\n");
-			$part1 += $colSymmetry;
-		} else {
-			$rowSymmetry = getSymmetry($map, 'col');
-			debugOut('Map ', $n, ' row symmetry: ', $rowSymmetry, "\n");
-			$part1 += $rowSymmetry * 100;
-		}
+		$part1 += getSymmetryCount($n, $map);
 	}
-
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	$part2 = 0;
+	foreach ($maps as $n => $map) {
+		$ignore = ['row' => getSymmetry($map, 'row'), 'col' => getSymmetry($map, 'col')];
+
+		foreach (cells($map) as [$x, $y, $cell]) {
+			$newCell = ($cell == '.') ? '#' : '.';
+
+			$map[$y][$x] = $newCell;
+
+			$count = getSymmetryCount($n, $map, $ignore);
+			$map[$y][$x] = $cell;
+
+			if ($count != FALSE) {
+				$part2 += $count;
+				break;
+			}
+		}
+	}
+	echo 'Part 2: ', $part2, "\n";
