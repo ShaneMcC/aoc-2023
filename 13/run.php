@@ -86,6 +86,7 @@
 
 			$map[$y][$x] = $newCell;
 
+			if (isDebug()) { echo "Smudge Correcting ({$x},{$y})", "\n"; }
 			$count = getSymmetryCount($n, $map, $ignore);
 			$map[$y][$x] = $cell;
 
