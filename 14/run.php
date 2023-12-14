@@ -13,10 +13,13 @@
 					$yChange = ($direction == 'N') ? 1 : -1;
 
 					for ($y = $yStart; $y != $yEnd; $y += $yChange) {
-						if ($newMap[$y][$x] == 'O' && ($newMap[$y - $yChange][$x] ?? '#') == '.') {
-							$newMap[$y - $yChange][$x] = 'O';
-							$newMap[$y][$x] = '.';
-							$y -= ($yChange * 2);
+						if ($newMap[$y][$x] == 'O') {
+							$testY = $y;
+							while (($newMap[$testY - $yChange][$x] ?? '#') == '.') {
+								$newMap[$testY - $yChange][$x] = 'O';
+								$newMap[$testY][$x] = '.';
+								$testY -= $yChange;
+							}
 						}
 					}
 				}
@@ -27,10 +30,13 @@
 					$xChange = ($direction == 'W') ? 1 : -1;
 
 					for ($x = $xStart; $x != $xEnd; $x += $xChange) {
-						if ($newMap[$y][$x] == 'O' && ($newMap[$y][$x - $xChange] ?? '#') == '.') {
-							$newMap[$y][$x - $xChange] = 'O';
-							$newMap[$y][$x] = '.';
-							$x -= ($xChange * 2);
+						if ($newMap[$y][$x] == 'O') {
+							$testX = $x;
+							while (($newMap[$y][$testX - $xChange] ?? '#') == '.') {
+								$newMap[$y][$testX - $xChange] = 'O';
+								$newMap[$y][$testX] = '.';
+								$testX -= $xChange;
+							}
 						}
 					}
 				}
