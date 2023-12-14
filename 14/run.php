@@ -11,15 +11,15 @@
 					$yStart = ($direction == 'N') ? 0 : count($map) - 1;
 					$yEnd = ($direction == 'N') ? count($map) : 0 - 1;
 					$yChange = ($direction == 'N') ? 1 : -1;
+					$lastFreeY = $yStart;
 
 					for ($y = $yStart; $y != $yEnd; $y += $yChange) {
-						if ($newMap[$y][$x] == 'O') {
-							$testY = $y;
-							while (($newMap[$testY - $yChange][$x] ?? '#') == '.') {
-								$newMap[$testY - $yChange][$x] = 'O';
-								$newMap[$testY][$x] = '.';
-								$testY -= $yChange;
-							}
+						if ($newMap[$y][$x] == 'O' && $lastFreeY != $y) {
+							$newMap[$y][$x] = '.';
+							$newMap[$lastFreeY][$x] = 'O';
+							$lastFreeY = $lastFreeY + $yChange;
+						} else if ($newMap[$y][$x] != '.') {
+							$lastFreeY = $y + $yChange;
 						}
 					}
 				}
@@ -28,15 +28,15 @@
 					$xStart = ($direction == 'W') ? 0 : count($map[0]) - 1;
 					$xEnd = ($direction == 'W') ? count($map[0]) : 0 - 1;
 					$xChange = ($direction == 'W') ? 1 : -1;
+					$lastFreeX = $xStart;
 
 					for ($x = $xStart; $x != $xEnd; $x += $xChange) {
-						if ($newMap[$y][$x] == 'O') {
-							$testX = $x;
-							while (($newMap[$y][$testX - $xChange] ?? '#') == '.') {
-								$newMap[$y][$testX - $xChange] = 'O';
-								$newMap[$y][$testX] = '.';
-								$testX -= $xChange;
-							}
+						if ($newMap[$y][$x] == 'O' && $lastFreeX != $x) {
+							$newMap[$y][$x] = '.';
+							$newMap[$y][$lastFreeX] = 'O';
+							$lastFreeX = $lastFreeX + $xChange;
+						} else if ($newMap[$y][$x] != '.') {
+							$lastFreeX = $x + $xChange;
 						}
 					}
 				}
