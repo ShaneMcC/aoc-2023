@@ -7,12 +7,12 @@
 			$newMap = $map;
 
 			if ($direction == 'N' || $direction == 'S') {
-				for ($x = 0; $x < count($map[0]); $x++) {
-					$yStart = ($direction == 'N') ? 0 : count($map) - 1;
-					$yEnd = ($direction == 'N') ? count($map) : 0 - 1;
-					$yChange = ($direction == 'N') ? 1 : -1;
-					$lastFreeY = $yStart;
+				$yStart = ($direction == 'N') ? 0 : count($map) - 1;
+				$yEnd = ($direction == 'N') ? count($map) : 0 - 1;
+				$yChange = ($direction == 'N') ? 1 : -1;
 
+				for ($x = 0; $x < count($map[0]); $x++) {
+					$lastFreeY = $yStart;
 					for ($y = $yStart; $y != $yEnd; $y += $yChange) {
 						if ($newMap[$y][$x] == 'O' && $lastFreeY != $y) {
 							$newMap[$y][$x] = '.';
@@ -24,12 +24,12 @@
 					}
 				}
 			} else if ($direction == 'E' || $direction == 'W') {
-				for ($y = 0; $y < count($map); $y++) {
-					$xStart = ($direction == 'W') ? 0 : count($map[0]) - 1;
-					$xEnd = ($direction == 'W') ? count($map[0]) : 0 - 1;
-					$xChange = ($direction == 'W') ? 1 : -1;
-					$lastFreeX = $xStart;
+				$xStart = ($direction == 'W') ? 0 : count($map[0]) - 1;
+				$xEnd = ($direction == 'W') ? count($map[0]) : 0 - 1;
+				$xChange = ($direction == 'W') ? 1 : -1;
 
+				for ($y = 0; $y < count($map); $y++) {
+					$lastFreeX = $xStart;
 					for ($x = $xStart; $x != $xEnd; $x += $xChange) {
 						if ($newMap[$y][$x] == 'O' && $lastFreeX != $x) {
 							$newMap[$y][$x] = '.';
