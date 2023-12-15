@@ -21,5 +21,29 @@
 	}
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = 0;
-	// echo 'Part 2: ', $part2, "\n";
+	$boxes = [];
+	foreach (explode(',', $input) as $step) {
+		preg_match('/^(.+)([=-])(\d?)$/', $step, $m);
+		[$all, $label, $action, $value] = $m;
+		$hash = getHash($label);
+
+		if ($action == '-') {
+			if (isset($boxes[$hash][$label])) {
+				$thing = $boxes[$hash][$label];
+				unset($boxes[$hash][$label]);
+			}
+		} else if ($action == '=') {
+			if (!isset($boxes[$hash])) { $boxes[$hash] = []; }
+			$boxes[$hash][$label] = $value;
+		}
+	}
+
+	$part2 = 0;
+	foreach ($boxes as $boxNum => $box) {
+		$pos = 1;
+		foreach ($box as $lens) {
+			$part2 += ($boxNum + 1) * $pos * $lens;
+			$pos++;
+		}
+	}
+	echo 'Part 2: ', $part2, "\n";
