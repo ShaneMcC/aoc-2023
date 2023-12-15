@@ -15,21 +15,17 @@
 		return $val;
 	}
 
-	$part1 = 0;
-	foreach (explode(',', $input) as $step) {
-		$part1 += getHash($step);
-	}
-	echo 'Part 1: ', $part1, "\n";
-
+	$part1 = $part2 = 0;
 	$boxes = [];
 	foreach (explode(',', $input) as $step) {
+		$part1 += getHash($step);
+
 		preg_match('/^(.+)([=-])(\d?)$/', $step, $m);
 		[$all, $label, $action, $value] = $m;
 		$hash = getHash($label);
 
 		if ($action == '-') {
 			if (isset($boxes[$hash][$label])) {
-				$thing = $boxes[$hash][$label];
 				unset($boxes[$hash][$label]);
 			}
 		} else if ($action == '=') {
@@ -38,7 +34,6 @@
 		}
 	}
 
-	$part2 = 0;
 	foreach ($boxes as $boxNum => $box) {
 		$pos = 1;
 		foreach ($box as $lens) {
@@ -46,4 +41,5 @@
 			$pos++;
 		}
 	}
+	echo 'Part 1: ', $part1, "\n";
 	echo 'Part 2: ', $part2, "\n";
