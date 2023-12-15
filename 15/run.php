@@ -7,9 +7,7 @@
 		$val = 0;
 
 		for ($i = 0; $i < strlen($string); $i++) {
-			$val += ord($string[$i]);
-			$val = $val * 17;
-			$val = $val % 256;
+			$val = (($val + ord($string[$i])) * 17) % 256;
 		}
 
 		return $val;
@@ -25,11 +23,8 @@
 		$hash = getHash($label);
 
 		if ($action == '-') {
-			if (isset($boxes[$hash][$label])) {
-				unset($boxes[$hash][$label]);
-			}
+			unset($boxes[$hash][$label]);
 		} else if ($action == '=') {
-			if (!isset($boxes[$hash])) { $boxes[$hash] = []; }
 			$boxes[$hash][$label] = $value;
 		}
 	}
