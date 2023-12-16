@@ -30,6 +30,8 @@
 
 		$ends[] = $start;
 		$visited = [];
+		$exits = [];
+		$exits["{$start[0]},{$start[1]}"] = true;
 
 		if (isDebug()) { drawMap($map, true, 'Original'); }
 
@@ -56,13 +58,15 @@
 				foreach ($tiles[$cell][$direction] ?? [$direction] as $newDirection) {
 					$ends[] = [$x, $y, $newDirection];
 				}
+			} else {
+				$exits["{$x},{$y}"] = true;
 			}
 		}
 
-		return $visited;
+		return [$visited, $exits];
 	}
 
-	$energised = getEnergised($map);
+	[$energised, $exits] = getEnergised($map);
 	$part1 = count($energised);
 	echo 'Part 1: ', $part1, "\n";
 	if (isDebug()) { die(); }
@@ -78,9 +82,12 @@
 		$starts[] = [$x, count($map), 'up'];
 	}
 
-	$part2 = 0;
+	$part2 = $part1;
 	foreach ($starts as $start) {
-		$energised = getEnergised($map, $start);
+		if (isset($exits["{$start[0]},{$start[1]}"])) { continue; }
+
+		[$energised, $newExits] = getEnergised($map, $start);
+		$exits = array_merge($exits, $newExits);
 		if (count($energised) > $part2) {
 			$part2 = count($energised);
 		}
