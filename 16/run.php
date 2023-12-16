@@ -31,8 +31,16 @@
 		$ends[] = $start;
 		$visited = [];
 
+		if (isDebug()) { drawMap($map, true, 'Original'); }
+
 		while (!empty($ends)) {
-			[$x, $y, $direction] = array_pop($ends);
+			if (isDebug()) {
+				// Shift makes a prettier drawing, but is slower.
+				[$x, $y, $direction] = array_shift($ends);
+				drawEnergised($map, $visited, true);
+			} else {
+				[$x, $y, $direction] = array_pop($ends);
+			}
 
 			$x += $directions[$direction][0];
 			$y += $directions[$direction][1];
@@ -54,22 +62,10 @@
 		return $visited;
 	}
 
-	if (isDebug()) {
-		drawMap($map, true, 'Original');
-	}
 	$energised = getEnergised($map);
-	if (isDebug()) {
-		foreach ($energised as $e => $_) {
-			[$x, $y] = explode(",", $e);
-			if ($map[$y][$x] == '.') {
-				$map[$y][$x] = '#';
-			}
-		}
-		drawMap($map, true, 'Energised');
-	}
-
-	$part1 = count($energised);;
+	$part1 = count($energised);
 	echo 'Part 1: ', $part1, "\n";
+	if (isDebug()) { die(); }
 
 	$starts = [];
 	for ($y = 0; $y < count($map); $y++) {
