@@ -3,10 +3,10 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$map = getInputMap();
 
-	function getEnergised($map) {
+	function getEnergised($map, $start = [-1, 0, 'right']) {
 		$ends = [];
 
-		$ends[] = [-1, 0, 'right'];
+		$ends[] = $start;
 		$visited = [];
 
 		while (!empty($ends)) {
@@ -73,5 +73,23 @@
 	$part1 = count($energised);;
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = 0;
-	// echo 'Part 2: ', $part2, "\n";
+	$starts = [];
+	for ($y = 0; $y < count($map); $y++) {
+		$starts[] = [-1, $y, 'right'];
+		$starts[] = [count($map[0]), $y, 'left'];
+	}
+
+	for ($x = 0; $x < count($map[0]); $x++) {
+		$starts[] = [$x, -1, 'down'];
+		$starts[] = [$x, count($map), 'up'];
+	}
+
+	$part2 = 0;
+	foreach ($starts as $start) {
+		$energised = getEnergised($map, $start);
+		if (count($energised) > $part2) {
+			$part2 = count($energised);
+		}
+	}
+
+	echo 'Part 2: ', $part2, "\n";
