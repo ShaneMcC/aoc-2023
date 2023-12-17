@@ -9,7 +9,7 @@
 	$directions[] = [0, 1, 'S'];
 	$directions[] = [1, 0, 'W'];
 
-	function getPath($map, $start, $end) {
+	function getPath($map, $start, $end, $minSteps = 1, $maxSteps = 3) {
 		global $directions;
 
 		$queue = new SPLPriorityQueue();
@@ -38,14 +38,16 @@
 				$moveCost = 0;
 				$pX = $x;
 				$pY = $y;
-				for ($i = 0; $i < 3; $i++) {
+				for ($i = 1; $i <= $maxSteps; $i++) {
 					$pX += $dX;
 					$pY += $dY;
 
 					if (isset($map[$pY][$pX])) {
 						$moveCost += $map[$pY][$pX];
-						$newCost = $loss + $moveCost;
 
+						if ($i < $minSteps) { continue; }
+
+						$newCost = $loss + $moveCost;
 						$queue->insert([$pX, $pY, $pD], -($newCost));
 					}
 				}
@@ -57,7 +59,9 @@
 
 	$start = [0, 0];
 	$end = [count($map[0]) - 1, count($map) - 1];
+
 	$part1 = getPath($map, $start, $end);
 	echo 'Part 1: ', $part1, "\n";
 
-	// echo 'Part 2: ', $part2, "\n";
+	$part2 = getPath($map, $start, $end, 4, 10);
+	echo 'Part 2: ', $part2, "\n";
