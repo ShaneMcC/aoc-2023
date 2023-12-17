@@ -4,10 +4,10 @@
 	$map = getInputMap();
 
 	$directions = [];
-	$directions[] = [0, -1, 'N'];
-	$directions[] = [-1, 0, 'E'];
-	$directions[] = [0, 1, 'S'];
-	$directions[] = [1, 0, 'W'];
+	$directions['N'] = [0, -1, 'S'];
+	$directions['E'] = [-1, 0, 'W'];
+	$directions['S'] = [0, 1, 'N'];
+	$directions['W'] = [1, 0, 'E'];
 
 	function getPath($map, $start, $end, $minSteps = 1, $maxSteps = 3) {
 		global $directions;
@@ -28,12 +28,9 @@
 			if (isset($costs[$y][$x][$direction])) { continue; }
 			$costs[$y][$x][$direction] = $loss;
 
-			foreach ($directions as [$dX, $dY, $pD]) {
-				if ($direction == 'N' && $pD == 'S') { continue; }
-				else if ($direction == 'E' && $pD == 'W') { continue; }
-				else if ($direction == 'W' && $pD == 'E') { continue; }
-				else if ($direction == 'S' && $pD == 'N') { continue; }
-				else if ($direction == $pD) { continue; }
+			foreach ($directions as $pD => [$dX, $dY, $oD]) {
+				if ($direction == $pD) { continue; }
+				else if ($direction == $oD) { continue; }
 
 				$moveCost = 0;
 				$pX = $x;
