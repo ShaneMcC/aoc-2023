@@ -48,7 +48,7 @@
 			}
 		}
 
-		return $costs;
+		return PHP_INT_MAX;
 	}
 
 	$start = [0, 0];
