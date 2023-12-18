@@ -14,11 +14,12 @@
 	$directions['2'] = $directions['L'];
 	$directions['3'] = $directions['U'];
 
-	$entries = [];
+	$p1entries = $p2entries = [];
 	foreach ($input as $line) {
-		preg_match('#(.*) (.*) \((.*)\)#SADi', $line, $m);
-		[$all, $direction, $distance, $colour] = $m;
-		$entries[] = ['direction' => $direction, 'distance' => $distance, 'colour' => $colour];
+		preg_match('/(.*) (.*) \(#(.{5})(.)\)/SADi', $line, $m);
+		[$all, $p1direction, $p1distance, $p2distance, $p2direction] = $m;
+		$p1entries[] = ['direction' => $p1direction, 'distance' => $p1distance];
+		$p2entries[] = ['direction' => $p2direction, 'distance' => hexdec($p2distance)];
 	}
 
 	function getOutlinePoints($instructions, $useColours = false) {
@@ -30,12 +31,10 @@
 		$len = 0;
 
 		foreach ($instructions as $in) {
-			$distance = $useColours ? hexdec(substr($in['colour'], 1, 5)) : $in['distance'];
-			$dXY = $directions[$useColours ? $in['colour'][6] : $in['direction']];
-
-			$x += $dXY[0] * $distance;
-			$y += $dXY[1] * $distance;
-			$len += $distance;
+			$dXY = $directions[$in['direction']];
+			$x += $dXY[0] * $in['distance'];
+			$y += $dXY[1] * $in['distance'];
+			$len += $in['distance'];
 			$points[] = [$x, $y];
 		}
 
@@ -53,10 +52,10 @@
 		return abs($area) / 2;
 	}
 
-	[$points, $len] = getOutlinePoints($entries);
+	[$points, $len] = getOutlinePoints($p1entries);
 	$part1 = shoelace($points) + ($len / 2) + 1;
 	echo 'Part 1: ', $part1, "\n";
 
-	[$points, $len] = getOutlinePoints($entries, true);
+	[$points, $len] = getOutlinePoints($p2entries);
 	$part2 = shoelace($points) + ($len / 2) + 1;
 	echo 'Part 2: ', $part2, "\n";
