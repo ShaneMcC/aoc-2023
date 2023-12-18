@@ -9,6 +9,11 @@
 	$directions['D'] = [0, 1];
 	$directions['U'] = [0, -1];
 
+	$directions['0'] = $directions['R'];
+	$directions['1'] = $directions['D'];
+	$directions['2'] = $directions['L'];
+	$directions['3'] = $directions['U'];
+
 	$entries = [];
 	foreach ($input as $line) {
 		preg_match('#(.*) (.*) \((.*)\)#SADi', $line, $m);
@@ -16,51 +21,42 @@
 		$entries[] = ['direction' => $direction, 'distance' => $distance, 'colour' => $colour];
 	}
 
-	function getOutline($instructions) {
+	function getOutlinePoints($instructions, $useColours = false) {
 		global $directions;
 
-		$map = [];
 		$x = $y = 0;
 
-		$map[0][0] = '#';
+		$points = [[0, 0]];
+		$len = 0;
 
 		foreach ($instructions as $in) {
-			$dXY = $directions[$in['direction']];
-			for ($i = 0; $i < $in['distance']; $i++) {
-				$x += $dXY[0];
-				$y += $dXY[1];
+			$distance = $useColours ? hexdec(substr($in['colour'], 1, 5)) : $in['distance'];
+			$dXY = $directions[$useColours ? $in['colour'][6] : $in['direction']];
 
-				$map[$y][$x] = '#';
-			}
+			$x += $dXY[0] * $distance;
+			$y += $dXY[1] * $distance;
+			$len += $distance;
+			$points[] = [$x, $y];
 		}
 
-		return $map;
+		return [$points, $len];
 	}
 
-	function digInterior($map) {
-
-		$start = [1,1];
-		$points = [$start];
-		while (!empty($points)) {
-			[$x, $y] = array_pop($points);
-			$map[$y][$x] = '#';
-			foreach (getAllAdjacentCells($map, $x, $y) as [$pX, $pY]) {
-				if (($map[$pY][$pX] ?? '.') == '.') {
-					$points[] = [$pX, $pY];
-				}
-			}
+	function shoelace($points) {
+		$area = 0;
+		$count = count($points);
+		for ($i = 0; $i < $count - 1; $i++) {
+			$area += $points[$i][0] * $points[$i + 1][1] - $points[$i + 1][0] * $points[$i][1];
 		}
+		$area += $points[$count - 1][0] * $points[0][1] - $points[0][0] * $points[$count - 1][1];
 
-		return $map;
+		return abs($area) / 2;
 	}
 
-	$map = getOutline($entries);
-	if (isDebug()) { drawSparseMap($map, ' ', true, 'Outline'); }
-	$map = digInterior($map);
-	if (isDebug()) { drawSparseMap($map, '.', true, 'Filled'); }
-
-	$part1 = count(findCells($map, '#'));
+	[$points, $len] = getOutlinePoints($entries);
+	$part1 = shoelace($points) + ($len / 2) + 1;
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = 0;
-	// echo 'Part 2: ', $part2, "\n";
+	[$points, $len] = getOutlinePoints($entries, true);
+	$part2 = shoelace($points) + ($len / 2) + 1;
+	echo 'Part 2: ', $part2, "\n";
