@@ -39,16 +39,16 @@
 	function processPart($part) {
 		global $workflows;
 
-		if (isDebug()) { debugOut(json_encode($part), ': '); }
+		if (isDebug()) { echo json_encode($part), ': '; }
 
 		$next = 'in';
 		while (true) {
-			if (isDebug()) { debugOut($next); }
+			if (isDebug()) { echo $next; }
 			if (!isset($workflows[$next])) {
-				if (isDebug()) { debugOut("\n"); }
+				if (isDebug()) { echo "\n"; }
 				return $next;
 			}
-			if (isDebug()) { debugOut(' -> '); }
+			if (isDebug()) { echo ' -> '; }
 
 			foreach ($workflows[$next] as $step) {
 				$result = true;
@@ -81,5 +81,54 @@
 	}
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = 0;
-	// echo 'Part 2: ', $part2, "\n";
+	$part2 = 0;
+
+	function getAcceptedCount($accepted, $workflowName) {
+		global $workflows;
+
+		if (isDebug()) { echo 'GetAcceptedCount(', json_encode($accepted), ', ', $workflowName, ');', "\n"; }
+
+		if ($workflowName == 'A') {
+			$v = 1;
+			foreach ($accepted as $a) {
+				$v *= ($a['max'] - $a['min']) + 1;
+			}
+			if (isDebug()) { echo "\t => ", $v, "\n"; }
+			return $v;
+		} else if ($workflowName == 'R') {
+			if (isDebug()) { echo "\t => ", 0, "\n"; }
+			return 0;
+		}
+
+		$workflow = $workflows[$workflowName];
+		$count = 0;
+
+		foreach ($workflow as $step) {
+			$stepAccepted = $accepted;
+			if ($step['condition'] !== true) {
+				$check = $step['condition']['check'];
+				$value = $step['condition']['value'];
+
+				if ($step['condition']['comparison'] === '<') {
+					$stepAccepted[$check]['max'] = min($value - 1, $accepted[$check]['max']);
+					$accepted[$check]['min'] = max($value, $accepted[$check]['min']);
+				} else if ($step['condition']['comparison'] === '>') {
+					$stepAccepted[$check]['min'] = max($value + 1, $accepted[$check]['min']);
+					$accepted[$check]['max'] = min($value, $accepted[$check]['max']);
+				}
+			}
+
+			$count += getAcceptedCount($stepAccepted, $step['then']);
+		}
+
+		return $count;
+	}
+
+	$accepted['x'] = ['min' => 1, 'max' => 4000];
+	$accepted['m'] = ['min' => 1, 'max' => 4000];
+	$accepted['a'] = ['min' => 1, 'max' => 4000];
+	$accepted['s'] = ['min' => 1, 'max' => 4000];
+
+	$part2 = getAcceptedCount($accepted, 'in');
+
+	echo 'Part 2: ', $part2, "\n";
