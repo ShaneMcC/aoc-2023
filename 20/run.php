@@ -9,14 +9,18 @@
 		[$all, $type, $module, $connected] = $m;
 		$val = 0;
 		if ($type == '&') { $val = []; }
-		$modules[$module] = ['type' => $type, 'connected' => explode(', ', $connected), 'value' => $val];
+		$modules[$module] = ['type' => $type, 'connected' => explode(', ', $connected), 'value' => $val, 'linked' => [], 'wasOn' => false];
 	}
 
 	foreach ($modules as $m => $mod) {
 		foreach ($mod['connected'] as $c) {
 			if (isset($modules[$c]) && $modules[$c]['type'] == '&') {
 				$modules[$c]['value'][$m] = 0;
+			} else if (!isset($modules[$c])) {
+				$modules[$c] = ['type' => 'rx', 'connected' => [], 'value' => false, 'linked' => [], 'wasOn' => false];
 			}
+
+			$modules[$c]['linked'][] = $m;
 		}
 	}
 
@@ -40,8 +44,6 @@
 				$high++;
 			}
 
-			if (!isset($modules[$target])) { continue; }
-
 			$mod = &$modules[$target];
 
 			if ($mod['type'] == '%') {
@@ -62,9 +64,8 @@
 				}
 			}
 
-			if (!is_array($mod['connected'])) {
-				die('#');
-			}
+			$mod['wasOn'] = $mod['wasOn'] || ($value == 1);
+
 			foreach ($mod['connected'] as $t) {
 				$queue[] = [$t, $value, $target];
 			}
@@ -86,5 +87,36 @@
 
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	$p2Modules = $modules;
+	$part2 = 0;
+	if (isset($p2Modules['rx'])) {
+
+		$checkMods = [];
+		foreach ($modules['rx']['linked'] as $l) {
+			foreach ($modules[$l]['linked'] as $m) {
+				$checkMods[$m] = 0;
+			}
+		}
+
+		$c = 0;
+		while (true) {
+			[$p2Modules, $low, $high] = processPulses($p2Modules);
+			$c++;
+			$hasValues = true;
+			foreach (array_keys($checkMods) as $cm) {
+				if ($p2Modules[$cm]['wasOn'] && $checkMods[$cm] == 0) {
+					$checkMods[$cm] = $c;
+				}
+				if ($checkMods[$cm] == 0) { $hasValues = false; }
+			}
+
+			if ($hasValues) {
+				break;
+			}
+		}
+	}
+
+	$part2 = 1;
+	foreach ($checkMods as $v) { $part2 = lcm($part2, $v); }
+
+	echo 'Part 2: ', $part2, "\n";
