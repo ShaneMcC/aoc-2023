@@ -79,6 +79,7 @@
 	$part1High = 0;
 	$p1Modules = $modules;
 	for ($i = 0; $i < 1000; $i++) {
+		debugOut('==========[ ', sprintf('%4d', $i), ' ]====', "\n");
 		[$p1Modules, $low, $high] = processPulses($p1Modules);
 		$part1Low += $low;
 		$part1High += $high;
