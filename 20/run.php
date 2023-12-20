@@ -114,9 +114,9 @@
 				break;
 			}
 		}
+
+		$part2 = 1;
+		foreach ($checkMods as $v) { $part2 = lcm($part2, $v); }
+
+		echo 'Part 2: ', $part2, "\n";
 	}
-
-	$part2 = 1;
-	foreach ($checkMods as $v) { $part2 = lcm($part2, $v); }
-
-	echo 'Part 2: ', $part2, "\n";
