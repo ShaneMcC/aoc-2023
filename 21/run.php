@@ -11,12 +11,15 @@ $directions['W'] = [1, 0];
 
 $start = findCells($map, 'S')[0];
 
-function findLocations($map, $start, $steps) {
+function findLocations($map, $start, $steps, $canWrap = false) {
 	global $directions;
 
 	$queue = new SPLPriorityQueue();
 	$queue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
 	$queue->insert([$start[0], $start[1]], 0);
+
+	$height = count($map);
+	$width = count($map[0]);
 
 	$costs = [];
 
@@ -33,7 +36,10 @@ function findLocations($map, $start, $steps) {
 			$pX = $x + $dX;
 			$pY = $y + $dY;
 
-			if (isset($map[$pY][$pX]) && $map[$pY][$pX] != '#') {
+			$testX = $canWrap ? wrapmod($pX, $width) : $pX;
+			$testY = $canWrap ? wrapmod($pY, $height) : $pY;
+
+			if (($map[$testY][$testX] ?? '#') != '#') {
 				$queue->insert([$pX, $pY], -($cost + 1));
 			}
 		}
@@ -61,5 +67,14 @@ if (isDebug()) {
 
 echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = 0;
-	// echo 'Part 2: ', $part2, "\n";
+$steps = 1000;
+// $steps = 26501365;
+$locations = findLocations($map, $start, $steps, true);
+$part2 = 0;
+
+foreach ($locations as $loc => $cost) {
+	if ($cost % 2 == 0) {
+		$part2++;
+	}
+}
+echo 'Part 2: ', $part2, "\n";
