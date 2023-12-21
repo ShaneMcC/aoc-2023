@@ -67,14 +67,25 @@ if (isDebug()) {
 
 echo 'Part 1: ', $part1, "\n";
 
-$steps = 1000;
-// $steps = 26501365;
-$locations = findLocations($map, $start, $steps, true);
+$steps = 64;
 $part2 = 0;
+$height = count($map);
+$width = count($map[0]);
+$yDiff = $steps;
+for ($y = ($start[1] - $yDiff); $y != ($start[1] + $yDiff + 1); $y++) {
+	$diff = abs($start[0] - $y);
+	$xDiff = $steps - $diff;
+	$minX = $start[0] - $xDiff;
+	$maxX = $start[0] + $xDiff;
 
-foreach ($locations as $loc => $cost) {
-	if ($cost % 2 == 0) {
-		$part2++;
+	for ($x = $minX; $x <= $maxX; $x += 2) {
+		$testX = wrapmod($x, $width);
+		$testY = wrapmod($y, $height);
+
+		if ($map[$testY][$testX] != '#') {
+			$part2++;
+		}
 	}
 }
+
 echo 'Part 2: ', $part2, "\n";
