@@ -11,9 +11,10 @@
 		preg_match('#(.*),(.*),(.*)~(.*),(.*),(.*)#SADi', $line, $m);
 		[$all, $x1, $y1, $z1, $x2, $y2, $z2] = $m;
 
-		$bricks[$id] = ['location' => [intval($x1), intval($y1), intval($z1), intval($x2), intval($y2), intval($z2)], 'supports' => [], 'supportedBy' => []];
+		$bricks[] = ['location' => [intval($x1), intval($y1), intval($z1), intval($x2), intval($y2), intval($z2)], 'supports' => [], 'supportedBy' => []];
+	}
+	foreach (array_keys($bricks) as $id) {
 		addBrick($map, $bricks, $id);
-		$id++;
 	}
 	updateSupports($map, $bricks);
 
