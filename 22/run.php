@@ -119,6 +119,7 @@
 	fall($map, $bricks);
 
 	$part1 = 0;
+	$disintegrateBlocks = [];
 	foreach (array_keys($bricks) as $id) {
 		if (isDebug()) {
 			echo 'Brick ', $id;
@@ -141,15 +142,17 @@
 		}
 
 		if ($canDisintegrate) {
+			$disintegrateBlocks[$id] = true;
 			if (isDebug()) { echo "\t", '- Disintegrate Safely.', "\n"; }
-			$part1++;
 		}
 	}
 
-	echo 'Part 1: ', $part1, "\n";
+	echo 'Part 1: ', count($disintegrateBlocks), "\n";
 
 	$part2 = 0;
 	foreach (array_keys($bricks) as $id) {
+		if (isset($disintegrateBlocks[$id])) { continue; }
+
 		if (isDebug()) { echo 'Removing brick ', $id; }
 		$testMap = $map;
 		$testBricks = $bricks;
