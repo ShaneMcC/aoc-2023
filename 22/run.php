@@ -16,9 +16,9 @@
 		addBrick($map, $bricks, $id);
 		$id++;
 	}
-	$bricks = updateSupports($map, $bricks);
+	updateSupports($map, $bricks);
 
-	function removeBrick(&$map, $bricks, $id) {
+	function removeBrick(&$map, &$bricks, $id) {
 		[$x1, $y1, $z1, $x2, $y2, $z2] = $bricks[$id]['location'];
 
 		for ($z = $z1; $z <= $z2; $z++) {
@@ -30,7 +30,7 @@
 		}
 	}
 
-	function addBrick(&$map, $bricks, $id) {
+	function addBrick(&$map, &$bricks, $id) {
 		[$x1, $y1, $z1, $x2, $y2, $z2] = $bricks[$id]['location'];
 
 		for ($z = $z1; $z <= $z2; $z++) {
@@ -64,7 +64,7 @@
 		return array_unique($supportedBy);
 	}
 
-	function updateSupports($map, $bricks) {
+	function updateSupports(&$map, &$bricks) {
 		unset($bricks['floor']);
 
 		foreach (array_keys($bricks) as $id) {
@@ -82,10 +82,9 @@
 		}
 
 		unset($bricks['floor']);
-		return $bricks;
 	}
 
-	function fall($map, $bricks) {
+	function fall(&$map, &$bricks) {
 		foreach (array_keys($bricks) as $id) { $bricks[$id]['fallen'] = false; }
 
 		$moved = false;
@@ -112,32 +111,32 @@
 			}
 		} while ($moved);
 
-		$bricks = updateSupports($map, $bricks);
+		updateSupports($map, $bricks);
 		return [$map, $bricks];
 	}
 
 	// Settle all the bricks
-	[$settledMap, $settledBricks] = fall($map, $bricks);
+	fall($map, $bricks);
 
 	$part1 = 0;
-	foreach (array_keys($settledBricks) as $id) {
+	foreach (array_keys($bricks) as $id) {
 		if (isDebug()) {
 			echo 'Brick ', $id;
-			echo ' - ', json_encode($settledBricks[$id]);
+			echo ' - ', json_encode($bricks[$id]);
 			echo "\n";
-			if (empty($settledBricks[$id]['supports'])) {
+			if (empty($bricks[$id]['supports'])) {
 				echo "\t", 'supports nothing.', "\n";
 			}
 		}
 		$canDisintegrate = true;
-		foreach ($settledBricks[$id]['supports'] as $s) {
-			if (count($settledBricks[$s]['supportedBy']) == 1) {
+		foreach ($bricks[$id]['supports'] as $s) {
+			if (count($bricks[$s]['supportedBy']) == 1) {
 				$canDisintegrate = false;
 				if (isDebug()) {
 					echo "\t", 'is the only support for ', $s, "\n";
 				}
 			} else if (isDebug()) {
-				echo "\t", 'helps support ', $s, ' with ', implode(', ', $settledBricks[$s]['supportedBy']), "\n";
+				echo "\t", 'helps support ', $s, ' with ', implode(', ', $bricks[$s]['supportedBy']), "\n";
 			}
 		}
 
@@ -150,11 +149,12 @@
 	echo 'Part 1: ', $part1, "\n";
 
 	$part2 = 0;
-	foreach (array_keys($settledBricks) as $id) {
+	foreach (array_keys($bricks) as $id) {
 		if (isDebug()) { echo 'Removing brick ', $id; }
-		$testMap = $settledMap;
-		removeBrick($testMap, $settledBricks, $id);
-		[$testMap, $testBricks] = fall($testMap, $settledBricks);
+		$testMap = $map;
+		$testBricks = $bricks;
+		removeBrick($testMap, $testBricks, $id);
+		fall($testMap, $testBricks);
 
 		$fallCount = 0;
 		foreach ($testBricks as $b) {
