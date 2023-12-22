@@ -12,7 +12,7 @@
 		[$all, $x1, $y1, $z1, $x2, $y2, $z2] = $m;
 		$diff = [$x2 - $x1, $y2 - $y1, $z2 - $z1];
 
-		$bricks[$id] = ['location' => [intval($x1), intval($y1), intval($z1), intval($x2), intval($y2), intval($z2)], 'supports' => [], 'supportedBy' => [], 'fallen' => false];
+		$bricks[$id] = ['location' => [intval($x1), intval($y1), intval($z1), intval($x2), intval($y2), intval($z2)], 'supports' => [], 'supportedBy' => []];
 		addBrick($map, $bricks, $id);
 		$id++;
 	}
@@ -85,8 +85,6 @@
 	}
 
 	function fall(&$map, &$bricks) {
-		foreach (array_keys($bricks) as $id) { $bricks[$id]['fallen'] = false; }
-
 		$moved = false;
 		do {
 			$moved = false;
@@ -103,7 +101,6 @@
 
 					// Update bricks array
 					$bricks[$id]['location'] = [$x1, $y1, $z1 - 1, $x2, $y2, $z2 - 1];
-					$bricks[$id]['fallen'] = true;
 
 					// Add brick back
 					addBrick($map, $bricks, $id);
@@ -150,22 +147,33 @@
 	echo 'Part 1: ', count($disintegrateBlocks), "\n";
 
 	$part2 = 0;
-	foreach (array_keys($bricks) as $id) {
-		if (isset($disintegrateBlocks[$id])) { continue; }
-
-		if (isDebug()) { echo 'Removing brick ', $id; }
-		$testMap = $map;
-		$testBricks = $bricks;
-		removeBrick($testMap, $testBricks, $id);
-		fall($testMap, $testBricks);
+	foreach (array_keys($bricks) as $testId) {
+		if (isset($disintegrateBlocks[$testId])) { continue; }
 
 		$fallCount = 0;
-		foreach ($testBricks as $b) {
-			if ($b['fallen']) { $fallCount++; }
-		}
+		$testBricks = $bricks;
+		unset($testBricks[$testId]);
+
+		do {
+			$fallen = false;
+			foreach (array_keys($testBricks) as $id) {
+				$remainingSupports = 0;
+				foreach ($testBricks[$id]['supportedBy'] as $s) {
+					if (isset($testBricks[$s]) || $s == 'floor') { $remainingSupports++; }
+				}
+
+				if ($remainingSupports == 0) {
+					unset($testBricks[$id]);
+					$fallCount++;
+					$fallen = true;
+				}
+			}
+		} while ($fallen);
 
 		$part2 += $fallCount;
-		if (isDebug()) { echo ' causes ', $fallCount, ' bricks to fall.', "\n"; }
+		if (isDebug()) {
+			echo 'Removing brick ', $testId, ' causes ', $fallCount, ' bricks to fall.', "\n";
+		}
 	}
 
 	echo 'Part 2: ', $part2, "\n";
