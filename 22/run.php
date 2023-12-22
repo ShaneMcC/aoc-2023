@@ -10,7 +10,6 @@
 	foreach ($input as $line) {
 		preg_match('#(.*),(.*),(.*)~(.*),(.*),(.*)#SADi', $line, $m);
 		[$all, $x1, $y1, $z1, $x2, $y2, $z2] = $m;
-		$diff = [$x2 - $x1, $y2 - $y1, $z2 - $z1];
 
 		$bricks[$id] = ['location' => [intval($x1), intval($y1), intval($z1), intval($x2), intval($y2), intval($z2)], 'supports' => [], 'supportedBy' => []];
 		addBrick($map, $bricks, $id);
@@ -42,7 +41,24 @@
 		}
 	}
 
-	function supportedBy($map, $bricks, $id) {
+	function hasSupport(&$map, &$bricks, $id) {
+		if ($id == 'floor') { return true; }
+		[$x1, $y1, $z1, $x2, $y2, $z2] = $bricks[$id]['location'];
+		$z = min($z1, $z2);
+		if ($z == 1) { return true; }
+
+		for ($y = $y1; $y <= $y2; $y++) {
+			for ($x = $x1; $x <= $x2; $x++) {
+				if (isset($map[$z - 1][$y][$x])) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	function supportedBy(&$map, &$bricks, $id) {
 		if ($id == 'floor') { return ['floor']; }
 
 		[$x1, $y1, $z1, $x2, $y2, $z2] = $bricks[$id]['location'];
@@ -89,18 +105,15 @@
 		do {
 			$moved = false;
 			foreach (array_keys($bricks) as $id) {
-				[$x1, $y1, $z1, $x2, $y2, $z2] = $bricks[$id]['location'];
-
-				$supportedBy = supportedBy($map, $bricks, $id);
-
-				if (empty($supportedBy)) {
+				if (!hasSupport($map, $bricks, $id)) {
 					$moved = true;
 
-					// Remove brick
+					// Remove brick from map
 					removeBrick($map, $bricks, $id);
 
-					// Update bricks array
-					$bricks[$id]['location'] = [$x1, $y1, $z1 - 1, $x2, $y2, $z2 - 1];
+					// Move brick down 1
+					$bricks[$id]['location'][2] -= 1;
+					$bricks[$id]['location'][5] -= 1;
 
 					// Add brick back
 					addBrick($map, $bricks, $id);
@@ -109,7 +122,6 @@
 		} while ($moved);
 
 		updateSupports($map, $bricks);
-		return [$map, $bricks];
 	}
 
 	// Settle all the bricks
@@ -119,9 +131,7 @@
 	$disintegrateBlocks = [];
 	foreach (array_keys($bricks) as $id) {
 		if (isDebug()) {
-			echo 'Brick ', $id;
-			echo ' - ', json_encode($bricks[$id]);
-			echo "\n";
+			echo 'Brick ', $id, ' - ', json_encode($bricks[$id]), "\n";
 			if (empty($bricks[$id]['supports'])) {
 				echo "\t", 'supports nothing.', "\n";
 			}
