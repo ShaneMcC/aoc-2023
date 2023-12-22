@@ -102,7 +102,6 @@
 	}
 
 	function fall(&$map, &$bricks) {
-		$moved = false;
 		do {
 			$moved = false;
 			foreach (array_keys($bricks) as $id) {
