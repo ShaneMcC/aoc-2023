@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-BASEIMAGE=shanemcc/aoc-2023-08
+BASEIMAGE=shanemcc/aoc-2023-09
 BASEDOCKERFILE="Dockerfile"
 
 IMAGE=${BASEIMAGE}

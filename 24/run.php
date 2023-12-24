@@ -85,7 +85,7 @@
 
 	// Fuck this.
 	$lines = [];
-	$lines[] = '#!/usr/bin/python';
+	$lines[] = '#!/usr/bin/python3';
 	$lines[] = 'rocks = []';
 	foreach ($entries as $e) {
 		$lines[] = "rocks.append((({$e['p'][0]},{$e['p'][1]},{$e['p'][2]}),({$e['v'][0]},{$e['v'][1]},{$e['v'][2]})))";
