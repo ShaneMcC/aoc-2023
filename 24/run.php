@@ -83,5 +83,40 @@
 
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	// Fuck this.
+	$lines = [];
+	$lines[] = '#!/usr/bin/python';
+	$lines[] = 'rocks = []';
+	foreach ($entries as $e) {
+		$lines[] = "rocks.append((({$e['p'][0]},{$e['p'][1]},{$e['p'][2]}),({$e['v'][0]},{$e['v'][1]},{$e['v'][2]})))";
+	}
+
+	$lines[] = <<<FUCKTHIS
+from z3 import Int, Solver
+
+solver = Solver()
+rpx = Int("rpx")
+rpy = Int("rpy")
+rpz = Int("rpz")
+rvx = Int("rvx")
+rvy = Int("rvy")
+rvz = Int("rvz")
+
+for i, ((x,y,z), (vx,vy,vz)) in enumerate(rocks):
+    t = Int(f"t{i}")
+    solver.add(t >= 0)
+    solver.add(x + vx * t == rpx + rvx * t)
+    solver.add(y + vy * t == rpy + rvy * t)
+    solver.add(z + vz * t == rpz + rvz * t)
+solver.check()
+print(solver.model().eval(rpx + rpy + rpz))
+FUCKTHIS;
+
+	$code = implode("\n", $lines);
+	$tempFile = tempnam(sys_get_temp_dir(), 'AOC23');
+	file_put_contents($tempFile, $code);
+	chmod($tempFile, 0700);
+	$part2 = exec($tempFile);
+	unlink($tempFile);
+
+	echo 'Part 2: ', $part2, "\n";
