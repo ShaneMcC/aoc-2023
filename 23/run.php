@@ -11,13 +11,6 @@
 	$directions['v'] = [0, 1];
 	$directions['>'] = [1, 0];
 
-	class ReverseSplPriorityQueue extends SplPriorityQueue {
-		public function compare($a, $b) {
-			if ($a === $b) return 0;
-			return $a < $b ? 1 : -1;
-		}
-	}
-
 	function buildGraph($map, $start) {
 		global $directions;
 
@@ -158,7 +151,7 @@
 	}
 
 	function findHikeGraph($graph, $start, $end) {
-		$queue = new ReverseSplPriorityQueue();
+		$queue = new SplPriorityQueue();
 		$queue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
 		$queue->insert([$start[0], $start[1], [$start], []], 0);
 
