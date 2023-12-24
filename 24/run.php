@@ -87,8 +87,11 @@
 	$lines = [];
 	$lines[] = '#!/usr/bin/python3';
 	$lines[] = 'rocks = []';
+	$count = 0;
 	foreach ($entries as $e) {
 		$lines[] = "rocks.append((({$e['p'][0]},{$e['p'][1]},{$e['p'][2]}),({$e['v'][0]},{$e['v'][1]},{$e['v'][2]})))";
+		$count++;
+		if ($count >= 3) { break; }
 	}
 
 	$lines[] = <<<FUCKTHIS
