@@ -2,7 +2,7 @@ FROM alpine:3.18
 
 ADD entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache php82 php82-gmp php82-opcache bash hyperfine && \
+RUN apk add --no-cache php82 php82-gmp php82-opcache bash hyperfine python3 py3-pip z3 z3-dev py3-z3 && \
     ln -sf /usr/bin/php82 /usr/bin/php && \
     touch /etc/php82/conf.d/01_jit.ini && \
     chmod 777 /etc/php82/conf.d/01_jit.ini && \
