@@ -113,9 +113,9 @@
 
 	if (isDebug()) {
 		$file = [];
-		$file[] = 'graph {';
-		foreach ($pairs as $pair => $_) {
-			$file[] = $pair;
+		$file[] = 'strict graph {';
+		foreach ($entries as $l => $c) {
+			$file[] = $l . ' -- { ' . implode(" ", array_keys($c)) . ' }';
 		}
 		$file[] = "}";
 
