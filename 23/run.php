@@ -154,21 +154,24 @@
 	function findHikeMap($map, $start, $end) {
 		global $directions;
 
-		$queue = new SPLPriorityQueue();
-		$queue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
-		$queue->insert([$start[0], $start[1], [$start]], 0);
+		$queue = new SplQueue();
+		$queue->push([$start[0], $start[1], [$start], 0]);
 
 		$costs = [];
 
 		while (!$queue->isEmpty()) {
-			$q = $queue->extract();
-			[$x, $y, $path] = $q['data'];
-			$cost = abs($q['priority']);
+			$q = $queue->pop();
+			[$x, $y, $path, $cost] = $q;
 
-			// if (isset($costs[$y][$x])) { continue; }
-			$costs[$y][$x] = [$cost, $path];
+			if (isDebug() && [$x, $y] == $end) {
+				if (!isset($costs[$y][$x]) || $cost > $costs[$y][$x][0]) {
+					echo $cost, "\n";
+				}
+			}
 
-			// if ([$x, $y] == $end) { return $costs; }
+			if (!isset($costs[$y][$x]) || $cost > $costs[$y][$x][0]) {
+				$costs[$y][$x] = [$cost, $path];
+			}
 
 			foreach ($directions as $pD => [$dX, $dY]) {
 				if ($map[$y][$x] == '.' || $map[$y][$x] == $pD) {
@@ -180,7 +183,7 @@
 					$newPath = $path;
 					$newPath[] = [$pX, $pY];
 
-					$queue->insert([$pX, $pY, $newPath], -($cost + 1));
+					$queue->push([$pX, $pY, $newPath, ($cost + 1)]);
 				}
 			}
 		}
@@ -204,7 +207,6 @@
 				}
 			}
 
-			// if (isset($costs[$y][$x])) { continue; }
 			if (!isset($costs[$y][$x]) || $cost > $costs[$y][$x][0]) {
 				$costs[$y][$x] = [$cost, $path];
 			}
