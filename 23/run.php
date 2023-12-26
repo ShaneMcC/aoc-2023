@@ -1,6 +1,16 @@
 #!/usr/bin/php
 <?php
+	$__CLI['long'] = ['part1', 'part2', 'graph'];
+	$__CLI['extrahelp'][] = '      --part1              Only run part 1.';
+	$__CLI['extrahelp'][] = '      --part2              Only run part 2.';
+	$__CLI['extrahelp'][] = '      --graph              Output graph for part 2.';
+
 	require_once(dirname(__FILE__) . '/../common/common.php');
+
+	$doPart1 = isset($__CLIOPTS['part1']) || (!isset($__CLIOPTS['part1']) && !isset($__CLIOPTS['part2']));
+	$doPart2 = isset($__CLIOPTS['part2']) || (!isset($__CLIOPTS['part1']) && !isset($__CLIOPTS['part2']));
+	$generateGraph = isset($__CLIOPTS['graph']);
+
 	$map = getInputMap();
 	$start = [1, 0];
 	$end = [count($map[0]) - 2, count($map) - 1];
@@ -187,52 +197,81 @@
 		return $costs;
 	}
 
-	$costs = findHikeMap($map, $start, $end);
-	[$cost, $path] = $costs[$end[1]][$end[0]];
+	if ($doPart1) {
+		$costs = findHikeMap($map, $start, $end);
+		[$cost, $path] = $costs[$end[1]][$end[0]];
 
-	if (isDebug()) {
-		$testMap = $map;
-		foreach ($path as [$x, $y]) {
-			$testMap[$y][$x] = 'O';
+		if (isDebug()) {
+			$testMap = $map;
+			foreach ($path as [$x, $y]) {
+				$testMap[$y][$x] = 'O';
+			}
+			drawMap($testMap, true, 'Part 1');
 		}
-		drawMap($testMap, true, 'Part 1');
+
+		$part1 = $cost;
+		echo 'Part 1: ', $part1, "\n";
 	}
 
-	$part1 = $cost;
-	echo 'Part 1: ', $part1, "\n";
+	if ($doPart2) {
+		$graph = buildGraph($map, $start, false);
 
-	$graph = buildGraph($map, $start, false);
+		if (isDebug()) {
+			echo 'Start: ', json_encode($start), "\n";
+			echo 'End: ', json_encode($end), "\n";
 
-	if (isDebug()) {
-		echo 'Start: ', json_encode($start), "\n";
-		echo 'End: ', json_encode($end), "\n";
+			$testMap = $map;
 
-		$testMap = $map;
-
-		foreach ($graph as $y => $xS) {
-			foreach ($xS as $x => $thing) {
-				$testMap[$y][$x] = 'X';
-				echo json_encode([$x, $y]), "\n";
-				foreach ($thing['options'] as $node) {
-					echo "\t", json_encode($node), "\n";
+			foreach ($graph as $y => $xS) {
+				foreach ($xS as $x => $thing) {
+					$testMap[$y][$x] = 'X';
+					echo json_encode([$x, $y]), "\n";
+					foreach ($thing['options'] as $node) {
+						echo "\t", json_encode($node), "\n";
+					}
 				}
 			}
+
+			drawMap($testMap, true, 'Nodes');
 		}
 
-		drawMap($testMap, true, 'Nodes');
-	}
+		if ($generateGraph) {
+			require_once(dirname(__FILE__) . '/../common/graphViz.php');
 
-	$costs = findHikeGraph($graph, $start, $end);
-	[$cost, $path] = $costs[$end[1]][$end[0]];
+			$g = new graphViz\Graph(['strict' => true, 'layout' => 'neato']);
 
-	if (isDebug()) {
-		$testMap = $map;
-		foreach ($path as $i => [$x, $y]) {
-			$testMap[$y][$x] = chr(65+$i);
-			echo chr(65+$i), ': ', json_encode([$x, $y]), "\n";
+			foreach ($graph as $y => $xS) {
+				foreach ($xS as $x => $thing) {
+					$testMap[$y][$x] = 'X';
+					$thisStr = json_encode([$x, $y]);
+					foreach ($thing['options'] as $node) {
+						$nodeStr = json_encode($node[0]);
+						$weight = $node[1];
+
+						$n1 = $g->getNodeByName($thisStr, true);
+						$n2 = $g->getNodeByName($nodeStr, true);
+
+						$g->addEdge(new graphViz\UndirectedEdge($n1, $n2, ["label" => $weight]));
+					}
+				}
+			}
+
+			$g->generate(__DIR__ . '/graph.svg');
+			die();
 		}
-		drawMap($testMap, true, 'Part 2');
-	}
 
-	$part2 = $cost;
-	echo 'Part 2: ', $part2, "\n";
+		$costs = findHikeGraph($graph, $start, $end);
+		[$cost, $path] = $costs[$end[1]][$end[0]];
+
+		if (isDebug()) {
+			$testMap = $map;
+			foreach ($path as $i => [$x, $y]) {
+				$testMap[$y][$x] = chr(65+$i);
+				echo chr(65+$i), ': ', json_encode([$x, $y]), "\n";
+			}
+			drawMap($testMap, true, 'Part 2');
+		}
+
+		$part2 = $cost;
+		echo 'Part 2: ', $part2, "\n";
+	}
