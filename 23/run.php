@@ -110,6 +110,7 @@
 			}
 		}
 
+		// Compress Graph Third Pass
 		// Add reverse nodes so that the graph is complete.
 		foreach ($graph as $y => $xS) {
 			foreach ($xS as $x => $thing) {
@@ -118,6 +119,33 @@
 					$graph[$nY][$nX]['options'][] = [[$x, $y], $nCost];
 				}
 			}
+		}
+
+		// Compress Graph Fourth Pass
+		// Remove nodes that only have a single pair of connections.
+		$removeNodes = [];
+		foreach ($graph as $y => $xS) {
+			foreach ($xS as $x => $thing) {
+				if (count($thing['options']) == 2) {
+					$removeNodes[] = [$x, $y];
+				}
+			}
+		}
+
+		foreach ($removeNodes as $rn) {
+			[$rX, $rY] = $rn;
+			[$opt1, $opt2] = $graph[$rY][$rX]['options'];
+
+			[[$x1, $y1], $cost1] = $opt1;
+			[[$x2, $y2], $cost2] = $opt2;
+
+			$graph[$y1][$x1]['options'] = array_filter($graph[$y1][$x1]['options'], fn($i) => ($i[0] != $rn));
+			$graph[$y2][$x2]['options'] = array_filter($graph[$y2][$x2]['options'], fn($i) => ($i[0] != $rn));
+
+			$graph[$y1][$x1]['options'][] = [[$x2, $y2], $cost1 + $cost2];
+			$graph[$y2][$x2]['options'][] = [[$x1, $y1], $cost1 + $cost2];
+
+			unset($graph[$rY][$rX]);
 		}
 
 		return $graph;
@@ -163,7 +191,7 @@
 	function findHikeGraph($graph, $start, $end) {
 		$queue = new SplPriorityQueue();
 		$queue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
-		$queue->insert([$start[0], $start[1], [$start], []], 0);
+		$queue->insert([$start[0], $start[1], [$start]], 0);
 
 		$costs = [];
 
