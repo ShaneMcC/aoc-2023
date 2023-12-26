@@ -95,18 +95,18 @@
 	}
 
 	$lines[] = <<<FUCKTHIS
-from z3 import Int, Solver
+from z3 import Real, Solver
 
 solver = Solver()
-rpx = Int("rpx")
-rpy = Int("rpy")
-rpz = Int("rpz")
-rvx = Int("rvx")
-rvy = Int("rvy")
-rvz = Int("rvz")
+rpx = Real("rpx")
+rpy = Real("rpy")
+rpz = Real("rpz")
+rvx = Real("rvx")
+rvy = Real("rvy")
+rvz = Real("rvz")
 
 for i, ((x,y,z), (vx,vy,vz)) in enumerate(rocks):
-    t = Int(f"t{i}")
+    t = Real(f"t{i}")
     solver.add(t >= 0)
     solver.add(x + vx * t == rpx + rvx * t)
     solver.add(y + vy * t == rpy + rvy * t)
