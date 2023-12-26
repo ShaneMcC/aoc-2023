@@ -1,6 +1,10 @@
 #!/usr/bin/php
 <?php
+	$__CLI['long'] = ['graph'];
+	$__CLI['extrahelp'][] = '      --graph              Output graph.';
+
 	require_once(dirname(__FILE__) . '/../common/common.php');
+	$generateGraph = isset($__CLIOPTS['graph']);
 	$input = getInputLines();
 
 	$entries = [];
@@ -111,16 +115,21 @@
 		return FALSE;
 	}
 
-	if (isDebug()) {
-		$file = [];
-		$file[] = 'strict graph {';
-		foreach ($entries as $l => $c) {
-			$file[] = $l . ' -- { ' . implode(" ", array_keys($c)) . ' }';
-		}
-		$file[] = "}";
+	if ($generateGraph) {
+		require_once(dirname(__FILE__) . '/../common/graphViz.php');
 
-		file_put_contents(__DIR__ . '/graph.dot', implode("\n", $file));
-		exec('cat ' . escapeshellarg(__DIR__ . '/graph.dot') . ' | dot -Kneato -Tsvg > ' . escapeshellarg(__DIR__ . '/graph.svg'));
+		$g = new graphViz\Graph(['strict' => true, 'layout' => 'neato']);
+
+		foreach ($entries as $l => $conn) {
+			$n1 = $g->getNodeByName($l, true);
+			$edges = [];
+			foreach (array_keys($conn) as $c) {
+				$edges[] = $g->getNodeByName($c, true);
+			}
+			$g->addEdge(new graphViz\UndirectedEdge($n1, $edges));
+		}
+
+		$g->generate(__DIR__ . '/graph.svg');
 		echo 'Look at graph.svg...', "\n";
 		die();
 	}
