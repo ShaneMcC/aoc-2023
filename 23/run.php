@@ -189,16 +189,14 @@
 	}
 
 	function findHikeGraph($graph, $start, $end) {
-		$queue = new SplPriorityQueue();
-		$queue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
-		$queue->insert([$start[0], $start[1], [$start]], 0);
+		$queue = new SplQueue();
+		$queue->push([$start[0], $start[1], [$start], 0]);
 
 		$costs = [];
 
 		while (!$queue->isEmpty()) {
-			$q = $queue->extract();
-			[$x, $y, $path] = $q['data'];
-			$cost = abs($q['priority']);
+			$q = $queue->pop();
+			[$x, $y, $path, $cost] = $q;
 
 			if (isDebug() && [$x, $y] == $end) {
 				if (!isset($costs[$y][$x]) || $cost > $costs[$y][$x][0]) {
@@ -218,7 +216,7 @@
 
 				if (in_array([$bX, $bY], $path)) { continue; }
 				$newPath = array_merge($path, [[$bX, $bY]]);
-				$queue->insert([$bX, $bY, $newPath], -($cost + $bCost));
+				$queue->push([$bX, $bY, $newPath, ($cost + $bCost)]);
 			}
 		}
 
