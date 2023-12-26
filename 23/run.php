@@ -288,8 +288,25 @@
 			die();
 		}
 
+		$realStart = $start;
+		$startOpt = $graph[$realStart[1]][$realStart[0]]['options'][0];
+		$start = $startOpt[0];
+
+		$realEnd = $end;
+		$endOpt = $graph[$realEnd[1]][$realEnd[0]]['options'][0];
+		$end = $endOpt[0];
+
+		// Remove real start/end from graph.
+		$graph[$start[1]][$start[0]]['options'] = array_filter($graph[$start[1]][$start[0]]['options'], fn($i) => ($i[0] != $realStart));
+		$graph[$end[1]][$end[0]]['options'] = array_filter($graph[$end[1]][$end[0]]['options'], fn($i) => ($i[0] != $realEnd));
+		unset($graph[$realStart[1]][$realStart[0]]);
+		unset($graph[$realEnd[1]][$realEnd[0]]);
+
 		$costs = findHikeGraph($graph, $start, $end);
 		[$cost, $path] = $costs[$end[1]][$end[0]];
+
+		$cost += $endOpt[1];
+		$cost += $startOpt[1];
 
 		if (isDebug()) {
 			$testMap = $map;
