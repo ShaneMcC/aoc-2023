@@ -89,21 +89,23 @@
 		return FALSE;
 	}
 
-	function drawGraph($nodes, $edges) {
+	function drawGraph($nodes, $edges, $labels = false) {
 		require_once(dirname(__FILE__) . '/../common/graphViz.php');
 
-		$g = new graphViz\Graph(['strict' => true, 'layout' => 'neato']);
+		$g = new graphViz\Graph(['strict' => false, 'layout' => 'neato']);
 
-		var_dump($edges);
+		$drawnEdges = [];
 
 		foreach ($nodes as $n => $es) {
 			$n1 = $g->getNodeByName($n, true);
-			$edgeNodes = [];
 			foreach ($es as $e) {
-				$e = array_values(array_filter($edges[$e], fn($i) => $i != $n))[0];
-				$edgeNodes[] = $g->getNodeByName($e, true);
+				if (!isset($drawnEdges[$e])) {
+					$n2 = $g->getNodeByName(array_values(array_filter($edges[$e], fn($i) => $i != $n))[0], true);
+					$options = $labels ? ['label' => $e] : [];
+					$g->addEdge(new graphViz\UndirectedEdge($n1, $n2, $options));
+					$drawnEdges[$e] = true;
+				}
 			}
-			$g->addEdge(new graphViz\UndirectedEdge($n1, $edgeNodes));
 		}
 
 		$g->generate(__DIR__ . '/graph.svg');
@@ -145,21 +147,21 @@
 
 	function kargers($nodes, $edges) {
 		$i = 0;
+
 		while (count($nodes) != 2) {
 			$rand = array_rand($edges);
-
 			contract($nodes, $edges, $rand, "new{$i}");
 			$i++;
 		}
 
-		return $edges;
+		return [$nodes, $edges];
 	}
 
 	$part1 = 0;
 	$attempt = 1;
 	while (true) {
-		echo $attempt++, "\n";
-		$testEdges = kargers($nodes, $edges);
+		if (isDebug()) { echo $attempt++, "\n"; }
+		[$testNodes, $testEdges] = kargers($nodes, $edges);
 
 		if (count($testEdges) == 3) {
 			$part1 = breakAndTest($nodes, $edges, array_keys($testEdges));
