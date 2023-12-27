@@ -3,9 +3,9 @@
     namespace graphviz;
 
     class Graph {
-        private array $options;
-        private array $nodes;
-        private array $edges;
+        private array $options = [];
+        private array $nodes = [];
+        private array $edges = [];
 
         public function __construct(array $options = []) {
             $this->options = $options;
