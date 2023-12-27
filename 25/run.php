@@ -27,87 +27,61 @@
 		}
 	}
 
-	// Get Pairs
-	$pairs = [];
-	foreach ($entries as $w => $conns) {
-		foreach ($conns as $c => $_) {
-			$pairId = $w . ' -- ' . $c;
-			$altPairId = $c . ' -- ' . $w;
-
-			if (isset($pairs[$pairId]) || isset($pairs[$altPairId])) {
-				continue;
-			}
-
-			$pairs[$pairId] = [$w, $c];
+	// Get nodes and edges.
+	$nodes = [];
+	$edges = [];
+	foreach ($entries as $e => $conn) {
+		$nodes[$e] = [];
+		foreach ($conn as $c => $_) {
+			$pairId = implode(' -- ', sorted('sort', [$e, $c]));
+			$nodes[$e][] = $pairId;
+			$edges[$pairId] = [$e, $c];
 		}
 	}
 
-	function getWires($wires, $cmp) {
+	function getConnected($nodes, $edges, $node) {
 		$result = [];
 
-		$check = [$cmp];
+		$check = [$node];
 		while (!empty($check)) {
-			$cmp = array_shift($check);
-			if (isset($result[$cmp])) { continue; }
-			$result[$cmp] = true;
+			$node = array_shift($check);
+			if (isset($result[$node])) { continue; }
+			$result[$node] = true;
 
-			foreach (array_keys($wires[$cmp]) as $c) {
-				$check[] = $c;
+			foreach ($nodes[$node] as $c) {
+				$check[] = array_values(array_filter($edges[$c], fn($i) => ($i != $node)))[0];
 			}
 		}
 
 		return $result;
 	}
 
-	function getGroups($wires, $max) {
+	function getGroups($nodes, $edges) {
 		$groups = [];
 		$groupId = 0;
 
-		foreach (array_keys($wires) as $w) {
+		foreach (array_keys($nodes) as $n) {
 			foreach ($groups as $g) {
-				if (isset($g[$w])) {
+				if (isset($g[$n])) {
 					continue 2;
 				}
 			}
 
-			$groups[$groupId] = getWires($wires, $w);
+			$groups[$groupId] = getConnected($nodes, $edges, $n);
 			$groupId++;
-
-			if ($groupId > $max) { return []; }
 		}
 
 		return $groups;
 	}
 
-	function getSets($pairs) {
-		foreach (array_keys($pairs) as $k1 => $p1) {
-			foreach (array_keys($pairs) as $k2 => $p2) {
-				if ($k2 <= $k1) { continue; }
-				foreach (array_keys($pairs) as $k3 => $p3) {
-					if ($k3 <= $k2) { continue; }
-
-					yield([$p1, $p2, $p3]);
-				}
-			}
+	function breakAndTest($nodes, $edges, $set) {
+		foreach ($set as $s) {
+			$e = $edges[$s];
+			$nodes[$e[0]] = array_filter($nodes[$e[0]], fn($i) => ($i != $s));
+			$nodes[$e[1]] = array_filter($nodes[$e[1]], fn($i) => ($i != $s));
 		}
-	}
 
-	function breakAndTest($entries, $pairs, $set) {
-		$p1 = $pairs[$set[0]];
-		$p2 = $pairs[$set[1]];
-		$p3 = $pairs[$set[2]];
-
-		$test = $entries;
-		unset($test[$p1[0]][$p1[1]]);
-		unset($test[$p1[1]][$p1[0]]);
-
-		unset($test[$p2[0]][$p2[1]]);
-		unset($test[$p2[1]][$p2[0]]);
-
-		unset($test[$p3[0]][$p3[1]]);
-		unset($test[$p3[1]][$p3[0]]);
-
-		$groups = getGroups($test, 2);
+		$groups = getGroups($nodes, $edges);
 		if (count($groups) == 2) {
 			return count($groups[0]) * count($groups[1]);
 		}
@@ -115,37 +89,82 @@
 		return FALSE;
 	}
 
-	if ($generateGraph) {
+	function drawGraph($nodes, $edges) {
 		require_once(dirname(__FILE__) . '/../common/graphViz.php');
 
 		$g = new graphViz\Graph(['strict' => true, 'layout' => 'neato']);
 
-		foreach ($entries as $l => $conn) {
-			$n1 = $g->getNodeByName($l, true);
-			$edges = [];
-			foreach (array_keys($conn) as $c) {
-				$edges[] = $g->getNodeByName($c, true);
+		var_dump($edges);
+
+		foreach ($nodes as $n => $es) {
+			$n1 = $g->getNodeByName($n, true);
+			$edgeNodes = [];
+			foreach ($es as $e) {
+				$e = array_values(array_filter($edges[$e], fn($i) => $i != $n))[0];
+				$edgeNodes[] = $g->getNodeByName($e, true);
 			}
-			$g->addEdge(new graphViz\UndirectedEdge($n1, $edges));
+			$g->addEdge(new graphViz\UndirectedEdge($n1, $edgeNodes));
 		}
 
 		$g->generate(__DIR__ . '/graph.svg');
+	}
+
+	if ($generateGraph) {
+		drawGraph($nodes, $edges);
 		echo 'Look at graph.svg...', "\n";
 		die();
 	}
 
-	$part1 = 0;
-	if (isTest()) {
-		foreach (getSets($pairs) as $set) {
-			$check = breakAndTest($entries, $pairs, $set);
-			if ($check !== false) {
-				$part1 = $check;
-				break;
+	function contract(&$nodes, &$edges, $rand, $newNode) {
+		// Contract the node.
+		$edge = $edges[$rand];
+		[$n1, $n2] = $edge;
+
+		$nodes[$newNode] = array_merge($nodes[$n1], $nodes[$n2]);
+		$nodes[$newNode] = array_unique(array_values(array_filter($nodes[$newNode], fn($i) => $i != $rand)));
+
+		unset($edges[$rand]);
+		unset($nodes[$n1]);
+		unset($nodes[$n2]);
+
+		$removeEdges = [];
+		foreach ($nodes[$newNode] as $e) {
+			$edges[$e] = array_values(array_filter($edges[$e], fn($i) => ($i != $n1 && $i != $n2)));
+			if (empty($edges[$e])) {
+				$removeEdges[] = $e;
+			} else {
+				$edges[$e][] = $newNode;
 			}
 		}
-	} else {
-		$set = ['dfk -- nxk', 'hcf -- lhn', 'ldl -- fpg'];
-		$part1 = breakAndTest($entries, $pairs, $set);
+
+		foreach ($removeEdges as $e) {
+			unset($edges[$e]);
+			$nodes[$newNode] = array_values(array_filter($nodes[$newNode], fn($i) => $i != $e));
+		}
+	}
+
+	function kargers($nodes, $edges) {
+		$i = 0;
+		while (count($nodes) != 2) {
+			$rand = array_rand($edges);
+
+			contract($nodes, $edges, $rand, "new{$i}");
+			$i++;
+		}
+
+		return $edges;
+	}
+
+	$part1 = 0;
+	$attempt = 1;
+	while (true) {
+		echo $attempt++, "\n";
+		$testEdges = kargers($nodes, $edges);
+
+		if (count($testEdges) == 3) {
+			$part1 = breakAndTest($nodes, $edges, array_keys($testEdges));
+			break;
+		}
 	}
 
 	echo 'Part 1: ', $part1, "\n";
