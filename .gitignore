@@ -1,2 +1,4 @@
 __template
 hyperfine.json
+graph.svg
+graph.dot
